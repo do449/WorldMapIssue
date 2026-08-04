@@ -9,9 +9,9 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     
-    <!-- 디자인 (CSS) 영역: <style> 태그 안에 작성합니다 -->
+    <!-- 디자인 (CSS) 영역 -->
     <style>
-        /* 화면 전체 여백 제거 */
+        /* 화면 전체 여백 제거 및 스크롤 숨김 */
         body, html {
             margin: 0;
             padding: 0;
@@ -37,15 +37,15 @@
             right: 20px;
             background: white;
             padding: 8px 15px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            border-radius: 20px; /* 둥근 모서리 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* 부드러운 그림자 */
             display: flex;
             align-items: center;
             gap: 8px;
             z-index: 10;
         }
 
-        /* 언어 선택 드롭다운 디자인 */
+        /* 언어 선택 텍스트 버튼 디자인 */
         #language-select {
             border: none;
             outline: none;
@@ -82,21 +82,21 @@
         </select>
     </div>
 
-    <!-- 기능 (JavaScript) 영역: <script> 태그 안에 작성합니다 -->
+    <!-- 기능 (JavaScript) 영역 -->
     <script>
-        // 1. Mapbox 토큰 설정 (★여기에 본인의 토큰을 반드시 넣으세요!)
-        mapboxgl.accessToken = '여기에_회원님의_MAPBOX_TOKEN을_넣어주세요';
+        // 1. Mapbox 토큰 설정 (회원님의 실제 토큰 적용 완료)
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZG80NDkiLCJhIjoiY21zY2sycmU0MWszbDJ4b2RiZGU4cjBmciJ9.Er4jq7iEltaGLG8_JmVgIw';
 
         // 2. 3D 지구본 생성
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/satellite-streets-v12',
-            center: [126.9780, 37.5665], // 서울
+            style: 'mapbox://styles/mapbox/satellite-streets-v12', // 위성 지도 스타일
+            center: [126.9780, 37.5665], // 초기 중심 좌표 (대한민국 서울)
             zoom: 2,
-            projection: 'globe' // 3D 지구본 모드 켜기
+            projection: 'globe' // 3D 지구본 모드 활성화
         });
 
-        // 3. 우주 배경 및 대기권 효과 추가
+        // 3. 우주 배경 및 대기권 효과 추가 (더욱 사실적인 지구본 연출)
         map.on('style.load', () => {
             map.setFog({
                 'color': 'rgb(186, 210, 235)',
@@ -114,10 +114,10 @@
             .setPopup(popup)
             .addTo(map);
 
-        // 5. 언어 선택 기능 이벤트
+        // 5. 언어 선택 기능 이벤트 (선택 시 터미널에 기록)
         document.getElementById('language-select').addEventListener('change', function(e) {
             console.log("선택된 언어:", e.target.value);
-            // 추후 언어별 데이터 처리 코드 작성 예정
+            // 추후 이곳에 언어별 데이터를 다시 불러오는 코드를 작성할 예정입니다.
         });
     </script>
 </body>
