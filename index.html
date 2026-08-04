@@ -3,37 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>글로벌 뉴스 맵 앱 - V5.0 풀 업그레이드</title>
+    <title>WorldMapIssue - 글로벌 뉴스 맵 앱</title>
     
+    <!-- Mapbox GL JS 라이브러리 불러오기 -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
     
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000; overflow: hidden; }
+        /* 1. 기본 레이아웃 스타일 */
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #000; overflow: hidden; 
+        }
         #map { width: 100%; height: 100vh; z-index: 1; }
 
-        /* 언어 선택기 UI 디자인 */
+        /* 2. 우측 상단 언어 선택기 UI 디자인 */
         #ui-controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            color: white;
-            font-weight: bold;
+            position: absolute; top: 20px; right: 20px; z-index: 10;
+            background: rgba(0, 0, 0, 0.7); padding: 10px 15px;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            color: white; font-weight: bold;
         }
         #ui-controls select {
-            margin-left: 10px;
-            padding: 5px;
-            border-radius: 4px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
+            margin-left: 10px; padding: 5px; border-radius: 4px;
+            font-weight: bold; border: none; cursor: pointer;
         }
 
+        /* 3. PC용 마우스 호버 툴팁 디자인 */
         #hover-tooltip {
             position: absolute; display: none; background-color: rgba(0, 0, 0, 0.85); 
             color: #ffffff; padding: 8px 14px; border-radius: 6px; font-size: 15px;
@@ -41,6 +38,24 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
+        /* 4. 모바일 터치 확인 팝업 디자인 */
+        #mobile-confirm-box {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: white; padding: 20px 25px; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 2000; text-align: center;
+            width: 80%; max-width: 320px; display: none;
+        }
+        #mobile-confirm-box p { font-size: 1.1em; font-weight: bold; color: #333; margin-bottom: 20px; }
+        .confirm-btn-group { display: flex; gap: 10px; justify-content: center; }
+        .confirm-btn-group button {
+            padding: 8px 20px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 1em;
+        }
+        #confirm-yes-btn { background-color: #3498db; color: white; }
+        #confirm-yes-btn:hover { background-color: #2980b9; }
+        #confirm-no-btn { background-color: #e74c3c; color: white; }
+        #confirm-no-btn:hover { background-color: #c0392b; }
+
+        /* 5. 뉴스 및 영상 출력 모달 팝업 디자인 */
         #news-modal {
             display: none; position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%); width: 90%; max-width: 600px;
@@ -51,7 +66,10 @@
 
         .close-btn { float: right; cursor: pointer; font-size: 24px; color: #555; font-weight: bold; }
         
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; margin-top: 20px; background: #000; border-radius: 8px; overflow: hidden; }
+        .video-container { 
+            position: relative; padding-bottom: 56.25%; height: 0; margin-top: 20px; 
+            background: #000; border-radius: 8px; overflow: hidden; 
+        }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
         
         #loading-msg { display: none; color: #0066cc; font-weight: bold; margin-bottom: 10px; text-align: center; }
@@ -61,15 +79,24 @@
         .article-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #3498db; }
         .article-title { font-weight: bold; color: #2c3e50; font-size: 1.1em; margin-bottom: 8px; }
         .article-desc { color: #555; font-size: 0.95em; line-height: 1.5; margin-bottom: 10px; }
-        .article-link { display: inline-block; color: #fff; background-color: #3498db; padding: 6px 12px; text-decoration: none; font-size: 0.9em; font-weight: bold; border-radius: 4px; transition: background 0.3s; }
+        .article-link { 
+            display: inline-block; color: #fff; background-color: #3498db; padding: 6px 12px; 
+            text-decoration: none; font-size: 0.9em; font-weight: bold; border-radius: 4px; transition: background 0.3s; 
+        }
         .article-link:hover { background-color: #2980b9; }
 
         .direct-link-btn { display: none; text-align: center; margin-top: 15px; }
-        .direct-link-btn a { display: inline-block; padding: 10px 20px; background-color: #ff0000; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; }
+        .direct-link-btn a { 
+            display: inline-block; padding: 10px 20px; background-color: #ff0000; color: white; 
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; 
+        }
         
-        .translation-badge { font-size: 0.8em; background-color: #e8f4fd; color: #3498db; padding: 3px 8px; border-radius: 12px; margin-left: 10px; vertical-align: middle; display: inline-block; }
+        .translation-badge { 
+            font-size: 0.8em; background-color: #e8f4fd; color: #3498db; 
+            padding: 3px 8px; border-radius: 12px; margin-left: 10px; vertical-align: middle; display: inline-block; 
+        }
 
-        /* 모바일 반응형 디자인 */
+        /* 6. 모바일 반응형 디자인 최적화 */
         @media (max-width: 768px) {
             #news-modal { width: 95%; padding: 15px; max-height: 90vh; }
             #ui-controls { top: 10px; right: 10px; font-size: 0.9em; padding: 8px; }
@@ -81,7 +108,7 @@
 </head>
 <body>
 
-    <!-- 언어 선택기 HTML -->
+    <!-- 언어 선택기 UI -->
     <div id="ui-controls">
         🌍 번역: 
         <select id="lang-selector">
@@ -93,9 +120,20 @@
         </select>
     </div>
 
+    <!-- 지도 및 툴팁 영역 -->
     <div id="map"></div>
     <div id="hover-tooltip">국가 이름</div>
 
+    <!-- 모바일 터치 확인 팝업 -->
+    <div id="mobile-confirm-box">
+        <p id="confirm-country-text">선택하시겠습니까?</p>
+        <div class="confirm-btn-group">
+            <button id="confirm-yes-btn">확인</button>
+            <button id="confirm-no-btn" onclick="closeConfirmBox()">취소</button>
+        </div>
+    </div>
+
+    <!-- 뉴스 및 영상 모달 팝업 -->
     <div id="news-modal">
         <span class="close-btn" onclick="closeModal()">✖</span>
         <h3 id="news-title">지역 뉴스</h3>
@@ -113,6 +151,7 @@
     </div>
 
     <script>
+        // API 키 설정 영역
         const YOUTUBE_API_KEY = 'AIzaSyCABI0Nr5UfNfyRwU6etLrgh8bmelM1Yhc'; 
         const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZG80NDkiLCJhIjoiY21zY2sycmU0MWszbDJ4b2RiZGU4cjBmciJ9.Er4jq7iEltaGLG8_JmVgIw';
         const NEWS_API_KEY = 'pub_6dd0bb1958db4e63b77c0ae403f94194'; 
@@ -120,12 +159,16 @@
         mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
         
         let currentTargetLang = 'ko';
-        
+        let pendingCoordinates = null;
+        let newsCache = {};
+
+        // 언어 변경 이벤트
         document.getElementById('lang-selector').addEventListener('change', (e) => {
             currentTargetLang = e.target.value;
             newsCache = {}; 
         });
 
+        // 3D 지구본 초기화
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/satellite-streets-v12', 
@@ -138,6 +181,7 @@
             map.setFog({ 'color': 'rgb(186, 210, 235)', 'high-color': 'rgb(36, 92, 223)', 'horizon-blend': 0.02, 'space-color': 'rgb(11, 11, 25)' });
         });
 
+        // 국가 GeoJSON 데이터 로드 및 레이어 추가
         map.on('load', () => {
             map.addSource('countries-source', {
                 'type': 'geojson',
@@ -164,6 +208,7 @@
         const tooltip = document.getElementById('hover-tooltip');
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+        // PC 마우스 호버 효과
         map.on('mousemove', 'country-fills', (e) => {
             if (isTouchDevice) return; 
 
@@ -216,15 +261,39 @@
             return langMap[countryCode] || 'en'; 
         }
 
-        let newsCache = {};
-
+        // 지도 클릭 이벤트 (PC / 모바일 분기 처리)
         map.on('click', async function(e) {
             let lat = e.lngLat.lat;
             let lng = e.lngLat.lng;
 
             while (lng > 180) lng -= 360;
             while (lng < -180) lng += 360;
-            
+
+            if (isTouchDevice) {
+                pendingCoordinates = { lat, lng };
+                const locationInfo = await getLocationInfo(lat, lng);
+                document.getElementById('confirm-country-text').innerText = `'${locationInfo.name}'(을)를 선택하시겠습니까?`;
+                document.getElementById('mobile-confirm-box').style.display = 'block';
+                return;
+            }
+
+            fetchAndShowNews(lat, lng);
+        });
+
+        document.getElementById('confirm-yes-btn').addEventListener('click', () => {
+            closeConfirmBox();
+            if (pendingCoordinates) {
+                fetchAndShowNews(pendingCoordinates.lat, pendingCoordinates.lng);
+                pendingCoordinates = null;
+            }
+        });
+
+        function closeConfirmBox() {
+            document.getElementById('mobile-confirm-box').style.display = 'none';
+        }
+
+        // 뉴스 및 영상 로드 함수
+        async function fetchAndShowNews(lat, lng) {
             showLoadingModal();
 
             try {
@@ -259,30 +328,23 @@
                 
                 if (textNews) {
                     const translationPromises = [translateText(textNews.title, currentTargetLang)];
-                    
                     if (textNews.description) {
                         translationPromises.push(translateText(textNews.description, currentTargetLang));
                     }
-                    
                     const translatedResults = await Promise.all(translationPromises);
                     textNews.title = translatedResults[0]; 
-                    
                     if (textNews.description) {
                         textNews.description = translatedResults[1]; 
                     }
                 }
                 
-                newsCache[cacheKey] = {
-                    videoId: videoId,
-                    textNews: textNews
-                };
-                
+                newsCache[cacheKey] = { videoId: videoId, textNews: textNews };
                 updateModal(locationInfo.name, videoId, textNews);
             } catch (error) {
                 console.error("실행 중 오류 발생:", error);
-                showErrorBox("데이터를 가져오는 중 예상치 못한 오류가 발생했습니다. 개발자 도구(F12)를 확인해주세요.");
+                showErrorBox("데이터를 가져오는 중 오류가 발생했습니다.");
             }
-        });
+        }
 
         async function translateText(text, targetLang) {
             if (!text) return "";
@@ -324,18 +386,12 @@
                 
                 let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&publishedAfter=${publishedAfter}&order=relevance&regionCode=${countryCode}&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 let response = await fetch(url);
-                
                 if (!response.ok) return '';
 
                 let data = await response.json();
                 if (data.items && data.items.length > 0) return data.items[0].id.videoId;
 
                 url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&order=relevance&regionCode=${countryCode}&maxResults=1&key=${YOUTUBE_API_KEY}`;
-                response = await fetch(url);
-                data = await response.json();
-                if (data.items && data.items.length > 0) return data.items[0].id.videoId;
-
-                url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoEmbeddable=true&order=relevance&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 response = await fetch(url);
                 data = await response.json();
                 if (data.items && data.items.length > 0) return data.items[0].id.videoId;
@@ -351,7 +407,6 @@
             try {
                 let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${countryCode.toLowerCase()}&q=${encodeURIComponent(localCountryName)}`;
                 let response = await fetch(url);
-                
                 if (!response.ok) return null;
 
                 let data = await response.json();
