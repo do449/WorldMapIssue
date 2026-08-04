@@ -3,177 +3,424 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldMapIssue - 글로벌 뉴스</title>
+    <title>글로벌 뉴스 맵 앱 - V5.0 풀 업그레이드</title>
     
-    <!-- Mapbox GL JS 라이브러리 불러오기 -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
     
     <style>
-        /* 1. 기본 레이아웃 설정 */
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Apple SD Gothic Neo', sans-serif; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000; overflow: hidden; }
+        #map { width: 100%; height: 100vh; z-index: 1; }
 
-        /* 2. 우측 상단 언어 선택 팝업 디자인 */
-        .lang-popup {
-            position: absolute; top: 20px; right: 20px; background: white; padding: 8px 15px;
-            border-radius: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 8px; z-index: 10;
+        /* 언어 선택기 UI 디자인 */
+        #ui-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            color: white;
+            font-weight: bold;
         }
-        #language-select { border: none; outline: none; font-size: 14px; background: transparent; cursor: pointer; }
-
-        /* 3. 팝업(툴팁) 공통 디자인 (둥근 모서리와 그림자) */
-        .mapboxgl-popup-content {
-            border-radius: 12px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); padding: 15px; font-size: 14px;
+        #ui-controls select {
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
         }
 
-        /* 4. 뉴스 & 유튜브 메인 팝업 디자인 */
-        .news-popup { min-width: 260px; }
-        .news-popup h3 { margin: 0 0 10px 0; font-size: 18px; color: #1a73e8; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .news-item { margin-bottom: 12px; }
-        .news-item strong { display: block; font-size: 14px; color: #333; margin-bottom: 4px; }
-        .news-item p { margin: 0; font-size: 12px; color: #666; }
-        .video-container { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 10px; background: #000; }
+        #hover-tooltip {
+            position: absolute; display: none; background-color: rgba(0, 0, 0, 0.85); 
+            color: #ffffff; padding: 8px 14px; border-radius: 6px; font-size: 15px;
+            font-weight: bold; pointer-events: none; z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        #news-modal {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); width: 90%; max-width: 600px;
+            background: white; padding: 25px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000;
+            max-height: 85vh; overflow-y: auto; 
+        }
+
+        .close-btn { float: right; cursor: pointer; font-size: 24px; color: #555; font-weight: bold; }
         
-        /* 5. 마우스 호버 시 따라다니는 작은 툴팁 디자인 */
-        .hover-popup .mapboxgl-popup-content {
-            background: rgba(0, 0, 0, 0.8); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px;
-            pointer-events: none; /* 마우스 클릭 방해 방지 */ box-shadow: none;
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; margin-top: 20px; background: #000; border-radius: 8px; overflow: hidden; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        #loading-msg { display: none; color: #0066cc; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        #error-msg { display: none; color: #e74c3c; font-weight: bold; margin-bottom: 10px; text-align: center; background: #fadbd8; padding: 10px; border-radius: 5px;}
+        #news-title { margin-top: 0; color: #1a1a1a; font-size: 1.4em; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .article-box { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #3498db; }
+        .article-title { font-weight: bold; color: #2c3e50; font-size: 1.1em; margin-bottom: 8px; }
+        .article-desc { color: #555; font-size: 0.95em; line-height: 1.5; margin-bottom: 10px; }
+        .article-link { display: inline-block; color: #fff; background-color: #3498db; padding: 6px 12px; text-decoration: none; font-size: 0.9em; font-weight: bold; border-radius: 4px; transition: background 0.3s; }
+        .article-link:hover { background-color: #2980b9; }
+
+        .direct-link-btn { display: none; text-align: center; margin-top: 15px; }
+        .direct-link-btn a { display: inline-block; padding: 10px 20px; background-color: #ff0000; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; }
+        
+        .translation-badge { font-size: 0.8em; background-color: #e8f4fd; color: #3498db; padding: 3px 8px; border-radius: 12px; margin-left: 10px; vertical-align: middle; display: inline-block; }
+
+        /* 모바일 반응형 디자인 */
+        @media (max-width: 768px) {
+            #news-modal { width: 95%; padding: 15px; max-height: 90vh; }
+            #ui-controls { top: 10px; right: 10px; font-size: 0.9em; padding: 8px; }
+            #hover-tooltip { display: none !important; }
+            .article-title { font-size: 1em; }
+            .article-desc { font-size: 0.85em; }
         }
-        .hover-popup .mapboxgl-popup-tip { display: none; /* 꼬리표 숨김 */ }
     </style>
 </head>
 <body>
-    <div id="map"></div>
 
-    <div class="lang-popup">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-        </svg>
-        <select id="language-select">
-            <option value="ko">한국어</option>
-            <option value="en">English</option>
+    <!-- 언어 선택기 HTML -->
+    <div id="ui-controls">
+        🌍 번역: 
+        <select id="lang-selector">
+            <option value="ko">한국어 (Korean)</option>
+            <option value="en">영어 (English)</option>
+            <option value="ja">일본어 (Japanese)</option>
+            <option value="zh-CN">중국어 (Chinese)</option>
+            <option value="es">스페인어 (Spanish)</option>
         </select>
     </div>
 
-    <script>
-        // 1. 회원님의 Mapbox 토큰
-        mapboxgl.accessToken = 'pk.eyJ1IjoiZG80NDkiLCJhIjoiY21zY2sycmU0MWszbDJ4b2RiZGU4cjBmciJ9.Er4jq7iEltaGLG8_JmVgIw';
+    <div id="map"></div>
+    <div id="hover-tooltip">국가 이름</div>
 
-        // 2. 3D 지구본 생성
+    <div id="news-modal">
+        <span class="close-btn" onclick="closeModal()">✖</span>
+        <h3 id="news-title">지역 뉴스</h3>
+        <p id="loading-msg">🌍 현지 데이터를 분석하고 번역 중입니다...</p>
+        <p id="error-msg"></p>
+        <div id="text-news-container"></div>
+        
+        <div class="video-container">
+            <iframe id="news-video" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+
+        <div class="direct-link-btn" id="direct-link-container">
+            <a id="youtube-link" href="#" target="_blank">유튜브에서 직접 보기 📺</a>
+        </div>
+    </div>
+
+    <script>
+        const YOUTUBE_API_KEY = 'AIzaSyCABI0Nr5UfNfyRwU6etLrgh8bmelM1Yhc'; 
+        const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZG80NDkiLCJhIjoiY21zY2sycmU0MWszbDJ4b2RiZGU4cjBmciJ9.Er4jq7iEltaGLG8_JmVgIw';
+        const NEWS_API_KEY = 'pub_6dd0bb1958db4e63b77c0ae403f94194'; 
+
+        mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+        
+        let currentTargetLang = 'ko';
+        
+        document.getElementById('lang-selector').addEventListener('change', (e) => {
+            currentTargetLang = e.target.value;
+            newsCache = {}; 
+        });
+
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/satellite-streets-v12',
-            center: [126.9780, 37.5665],
-            zoom: 2,
-            projection: 'globe'
+            style: 'mapbox://styles/mapbox/satellite-streets-v12', 
+            center: [126.9780, 37.5665], 
+            zoom: 1.5, 
+            projection: 'globe' 
         });
 
-        // 우주 배경 효과
         map.on('style.load', () => {
-            map.setFog({ 'color': 'rgb(186, 210, 235)', 'high-color': 'rgb(36, 92, 223)', 'space-color': 'rgb(11, 11, 25)' });
+            map.setFog({ 'color': 'rgb(186, 210, 235)', 'high-color': 'rgb(36, 92, 223)', 'horizon-blend': 0.02, 'space-color': 'rgb(11, 11, 25)' });
         });
 
-        // 3. 지도가 완전히 로딩된 후 나라 데이터 추가
         map.on('load', () => {
+            map.addSource('countries-source', {
+                'type': 'geojson',
+                'data': 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json'
+            });
+            map.addLayer({
+                'id': 'country-fills',
+                'type': 'fill',
+                'source': 'countries-source',
+                'paint': { 'fill-color': 'transparent' }
+            });
+            map.addLayer({
+                'id': 'country-fills-hover',
+                'type': 'fill',
+                'source': 'countries-source',
+                'paint': {
+                    'fill-color': 'rgba(52, 152, 219, 0.4)', 
+                    'fill-outline-color': '#ffffff' 
+                },
+                'filter': ['==', 'name', ''] 
+            });
+        });
+
+        const tooltip = document.getElementById('hover-tooltip');
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        map.on('mousemove', 'country-fills', (e) => {
+            if (isTouchDevice) return; 
+
+            if (e.features.length > 0) {
+                map.getCanvas().style.cursor = 'pointer';
+                const countryName = e.features[0].properties.name;
+                map.setFilter('country-fills-hover', ['==', 'name', countryName]);
+                if (countryName) {
+                    tooltip.innerText = countryName;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.originalEvent.pageX + 15) + 'px';
+                    tooltip.style.top = (e.originalEvent.pageY + 15) + 'px';
+                }
+            }
+        });
+
+        map.on('mouseleave', 'country-fills', () => {
+            if (isTouchDevice) return;
+            map.getCanvas().style.cursor = ''; 
+            map.setFilter('country-fills-hover', ['==', 'name', '']); 
+            tooltip.style.display = 'none'; 
+        });
+
+        const PUBLIC_BROADCASTERS = {
+            'KR': 'KBS 뉴스', 'JP': 'NHK ニュース', 'CN': 'CCTV 新闻', 'TW': 'PTS 台灣公共電視', 
+            'IN': 'DD News', 'ID': 'TVRI Nasional', 'VN': 'VTV News', 'TH': 'Thai PBS', 
+            'SG': 'CNA', 'MY': 'Berita RTM', 'PH': 'PTV Philippines',
+            'AU': 'ABC News (Australia)', 'NZ': 'RNZ',
+            'US': 'PBS NewsHour', 'CA': 'CBC News', 'BR': 'TV Brasil', 'MX': 'Canal Catorce', 
+            'AR': 'Televisión Pública Noticias', 'CL': '24 Horas TVN Chile', 'PE': 'TVPerú Noticias',
+            'GB': 'BBC News', 'FR': 'France 24', 'DE': 'Tagesschau', 'IT': 'Rai News24', 
+            'ES': 'RTVE Noticias', 'RU': 'Russia Today', 'CH': 'SRF News', 'SE': 'SVT Nyheter', 
+            'NO': 'NRK Nyheter', 'FI': 'Yle Uutiset', 'DK': 'DR Nyheder', 'NL': 'NOS Nieuws', 
+            'BE': 'VRT NWS', 'AT': 'ORF ZIB', 'IE': 'RTÉ News', 'PT': 'RTP Notícias',
+            'PL': 'TVP Info', 'GR': 'ERT News', 'UA': 'Суспільне Новини',
+            'ZA': 'SABC News', 'EG': 'Nile News', 'NG': 'NTA 연합 뉴스', 'KE': 'KBC Channel 1',
+            'IL': 'Kan 11 News', 'TR': 'TRT Haber', 'SA': 'Al Ekhbariya', 'AE': 'Abu Dhabi TV'
+        };
+
+        function getCountryLangCode(countryCode) {
+            const langMap = {
+                'KR': 'ko', 'JP': 'ja', 'CN': 'zh-CN', 'TW': 'zh-TW', 'IN': 'hi', 'ID': 'id',
+                'VN': 'vi', 'TH': 'th', 'MS': 'ms', 'PH': 'tl',
+                'FR': 'fr', 'DE': 'de', 'IT': 'it', 'ES': 'es', 'RU': 'ru', 'CH': 'de',
+                'SE': 'sv', 'NO': 'no', 'FI': 'fi', 'DK': 'da', 'NL': 'nl', 'PT': 'pt',
+                'PL': 'pl', 'GR': 'el', 'UA': 'uk',
+                'BR': 'pt', 'MX': 'es', 'AR': 'es', 'CL': 'es', 'PE': 'es',
+                'ZA': 'en', 'EG': 'ar', 'SA': 'ar', 'AE': 'ar', 'TR': 'tr', 'IL': 'he'
+            };
+            return langMap[countryCode] || 'en'; 
+        }
+
+        let newsCache = {};
+
+        map.on('click', async function(e) {
+            let lat = e.lngLat.lat;
+            let lng = e.lngLat.lng;
+
+            while (lng > 180) lng -= 360;
+            while (lng < -180) lng += 360;
             
-            // 전 세계 국가 데이터(GeoJSON)를 외부에서 불러와서 지도에 넣습니다.
-            map.addSource('countries', {
-                type: 'geojson',
-                data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson',
-                generateId: true // 마우스 호버 효과를 위해 자동으로 고유 ID 생성
-            });
+            showLoadingModal();
 
-            // 투명한 나라 면적 레이어 추가 (마우스 호버 시 파란색으로 변함)
-            map.addLayer({
-                id: 'country-fills',
-                type: 'fill',
-                source: 'countries',
-                paint: {
-                    'fill-color': '#1a73e8', // 선택 시 칠해질 파란색
-                    'fill-opacity': [
-                        'case',
-                        ['boolean', ['feature-state', 'hover'], false],
-                        0.4, // 마우스가 올라갔을 때의 투명도 (40%)
-                        0    // 평소 투명도 (0% = 안 보임)
-                    ]
+            try {
+                const locationInfo = await getLocationInfo(lat, lng);
+                const localLangCode = getCountryLangCode(locationInfo.code);
+                
+                const cacheKey = `${locationInfo.code}_${currentTargetLang}`;
+                if (newsCache[cacheKey]) {
+                    updateModal(locationInfo.name, newsCache[cacheKey].videoId, newsCache[cacheKey].textNews);
+                    return;
                 }
-            });
 
-            // 얇은 하얀색 나라 경계선 레이어 추가
-            map.addLayer({
-                id: 'country-borders',
-                type: 'line',
-                source: 'countries',
-                paint: {
-                    'line-color': '#ffffff',
-                    'line-width': 1,
-                    'line-opacity': 0.3
+                let searchKeyword = PUBLIC_BROADCASTERS[locationInfo.code];
+                let localCountryName = "";
+
+                if (searchKeyword) {
+                    localCountryName = await translateText(locationInfo.name, localLangCode);
+                    searchKeyword = `"${searchKeyword}" ${localCountryName}`;
+                } else {
+                    const [translatedCountry, translatedTvNews] = await Promise.all([
+                        translateText(locationInfo.name, localLangCode),
+                        translateText("TV news", localLangCode)
+                    ]);
+                    localCountryName = translatedCountry;
+                    searchKeyword = `${localCountryName} ${translatedTvNews}`;
                 }
-            });
-
-            // 호버 및 클릭 기능을 위한 변수 설정
-            let hoveredStateId = null;
-            const hoverPopup = new mapboxgl.Popup({ closeButton: false, className: 'hover-popup' });
-
-            // [이벤트 1] 마우스가 나라 위로 움직일 때 (Hover)
-            map.on('mousemove', 'country-fills', (e) => {
-                if (e.features.length > 0) {
-                    // 이전 나라의 호버 색상을 뺌
-                    if (hoveredStateId !== null) {
-                        map.setFeatureState({ source: 'countries', id: hoveredStateId }, { hover: false });
-                    }
-                    // 현재 마우스가 있는 나라에 호버 색상을 넣음
-                    hoveredStateId = e.features[0].id;
-                    map.setFeatureState({ source: 'countries', id: hoveredStateId }, { hover: true });
-
-                    // 마우스를 따라다니는 작은 툴팁에 나라 이름 표시
-                    const countryName = e.features[0].properties.admin; // 데이터에서 나라 이름 추출
-                    hoverPopup.setLngLat(e.lngLat).setHTML(countryName).addTo(map);
+                
+                let [videoId, textNews] = await Promise.all([
+                    getNewsVideo(locationInfo.code, searchKeyword),
+                    getTextNews(locationInfo.code, localCountryName)
+                ]);
+                
+                if (textNews) {
+                    const translationPromises = [translateText(textNews.title, currentTargetLang)];
                     
-                    // 마우스 커서를 손가락 모양으로 변경
-                    map.getCanvas().style.cursor = 'pointer';
+                    if (textNews.description) {
+                        translationPromises.push(translateText(textNews.description, currentTargetLang));
+                    }
+                    
+                    const translatedResults = await Promise.all(translationPromises);
+                    textNews.title = translatedResults[0]; 
+                    
+                    if (textNews.description) {
+                        textNews.description = translatedResults[1]; 
+                    }
                 }
-            });
+                
+                newsCache[cacheKey] = {
+                    videoId: videoId,
+                    textNews: textNews
+                };
+                
+                updateModal(locationInfo.name, videoId, textNews);
+            } catch (error) {
+                console.error("실행 중 오류 발생:", error);
+                showErrorBox("데이터를 가져오는 중 예상치 못한 오류가 발생했습니다. 개발자 도구(F12)를 확인해주세요.");
+            }
+        });
 
-            // [이벤트 2] 마우스가 나라 밖으로 나갈 때
-            map.on('mouseleave', 'country-fills', () => {
-                if (hoveredStateId !== null) {
-                    map.setFeatureState({ source: 'countries', id: hoveredStateId }, { hover: false });
+        async function translateText(text, targetLang) {
+            if (!text) return "";
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                return data[0].map(item => item[0]).join("");
+            } catch (error) {
+                return text; 
+            }
+        }
+
+        async function getLocationInfo(lat, lng) {
+            try {
+                const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=3&accept-language=${currentTargetLang}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                let name = "바다 또는 미등록 지역";
+                let code = "";
+
+                if (data.address) {
+                    name = data.address.country || data.address.state || "미등록 지역";
+                    code = data.address.country_code ? data.address.country_code.toUpperCase() : "";
                 }
-                hoveredStateId = null;
-                hoverPopup.remove(); // 작은 툴팁 숨기기
-                map.getCanvas().style.cursor = '';
-            });
+                return { name: name, code: code };
+            } catch (error) {
+                return { name: "주소 확인 불가", code: "" };
+            }
+        }
 
-            // [이벤트 3] 나라를 클릭했을 때 뉴스 및 영상 팝업 띄우기
-            map.on('click', 'country-fills', (e) => {
-                const countryName = e.features[0].properties.admin;
-                const coordinates = e.lngLat;
+        async function getNewsVideo(countryCode, searchKeyword) {
+            if (!countryCode) return '';
+            try {
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                const publishedAfter = yesterday.toISOString();
+                const encodedQuery = encodeURIComponent(searchKeyword);
+                
+                let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&publishedAfter=${publishedAfter}&order=relevance&regionCode=${countryCode}&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                let response = await fetch(url);
+                
+                if (!response.ok) return '';
 
-                // 뉴스 기사와 유튜브 영상 플레이스홀더(가짜 데이터) HTML 작성
-                const popupContent = `
-                    <div class="news-popup">
-                        <h3>${countryName} 최신 이슈</h3>
-                        <div class="news-item">
-                            <strong>📰 [속보] ${countryName}의 경제 및 정치 동향</strong>
-                            <p>추후 News API를 연결하여 실제 기사 요약이 이곳에 표시됩니다.</p>
-                        </div>
-                        <div class="video-container">
-                            <!-- 유튜브 영상 뼈대 (임시 영상) -->
-                            <iframe width="100%" height="150" src="https://www.youtube.com/embed/jfKfPfyJRdk" frameborder="0" allowfullscreen></iframe>
-                        </div>
+                let data = await response.json();
+                if (data.items && data.items.length > 0) return data.items[0].id.videoId;
+
+                url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&order=relevance&regionCode=${countryCode}&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                response = await fetch(url);
+                data = await response.json();
+                if (data.items && data.items.length > 0) return data.items[0].id.videoId;
+
+                url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoEmbeddable=true&order=relevance&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                response = await fetch(url);
+                data = await response.json();
+                if (data.items && data.items.length > 0) return data.items[0].id.videoId;
+
+                return ''; 
+            } catch (error) {
+                return '';
+            }
+        }
+
+        async function getTextNews(countryCode, localCountryName) {
+            if (!countryCode) return null;
+            try {
+                let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${countryCode.toLowerCase()}&q=${encodeURIComponent(localCountryName)}`;
+                let response = await fetch(url);
+                
+                if (!response.ok) return null;
+
+                let data = await response.json();
+                if (data.results && data.results.length > 0) return data.results[0]; 
+
+                url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${countryCode.toLowerCase()}`;
+                response = await fetch(url);
+                data = await response.json();
+                if (data.results && data.results.length > 0) return data.results[0]; 
+                
+                return null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function showLoadingModal() {
+            document.getElementById('news-title').innerText = "데이터 불러오는 중...";
+            document.getElementById('text-news-container').innerHTML = '';
+            document.getElementById('loading-msg').style.display = 'block';
+            document.getElementById('error-msg').style.display = 'none';
+            document.getElementById('news-video').src = "";
+            document.getElementById('news-video').parentElement.style.display = 'none';
+            document.getElementById('direct-link-container').style.display = 'none';
+            document.getElementById('news-modal').style.display = 'block';
+        }
+
+        function showErrorBox(message) {
+            const errorBox = document.getElementById('error-msg');
+            errorBox.innerText = message;
+            errorBox.style.display = 'block';
+            document.getElementById('loading-msg').style.display = 'none';
+        }
+
+        function updateModal(locationName, videoId, textNews) {
+            document.getElementById('loading-msg').style.display = 'none';
+            document.getElementById('news-title').innerHTML = `[${locationName}] 최신 핫이슈 <span class="translation-badge">🌐 자동 번역됨</span>`;
+            
+            const textContainer = document.getElementById('text-news-container');
+            if (textNews) {
+                const description = textNews.description ? textNews.description.substring(0, 150) + '...' : '자세한 뉴스 내용은 원문 링크를 통해 확인해 주세요.';
+                textContainer.innerHTML = `
+                    <div class="article-box">
+                        <div class="article-title">${textNews.title}</div>
+                        <div class="article-desc">${description}</div>
+                        <a href="${textNews.link}" target="_blank" class="article-link">기사 원문 읽기 ➔</a>
                     </div>
                 `;
+            } else {
+                textContainer.innerHTML = `<div class="article-box"><div class="article-desc">현재 이 지역의 텍스트 뉴스 기사를 불러올 수 없습니다.</div></div>`;
+            }
 
-                // 기존 마커 팝업 대신 클릭한 위치에 메인 팝업 생성
-                new mapboxgl.Popup({ offset: 15 })
-                    .setLngLat(coordinates)
-                    .setHTML(popupContent)
-                    .addTo(map);
-            });
-        });
+            if (videoId) {
+                const videoIframe = document.getElementById('news-video');
+                const currentOrigin = window.location.origin !== "null" ? window.location.origin : "http://localhost";
+                
+                videoIframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&origin=${currentOrigin}&cc_load_policy=1&hl=${currentTargetLang}&cc_lang_pref=${currentTargetLang}`;
+                videoIframe.parentElement.style.display = 'block';
+
+                const ytLink = document.getElementById('youtube-link');
+                ytLink.href = `https://www.youtube.com/watch?v=${videoId}&hl=${currentTargetLang}&cc_lang_pref=${currentTargetLang}&cc_load_policy=1`;
+                document.getElementById('direct-link-container').style.display = 'block';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('news-modal').style.display = 'none';
+            document.getElementById('news-video').src = ""; 
+        }
     </script>
 </body>
 </html>
