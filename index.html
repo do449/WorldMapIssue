@@ -9,68 +9,44 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     
-    <!-- 디자인 (CSS) 영역 -->
     <style>
-        /* 화면 전체 여백 제거 및 스크롤 숨김 */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-        }
+        /* 1. 기본 레이아웃 설정 */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Apple SD Gothic Neo', sans-serif; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; }
 
-        /* 지도가 화면에 꽉 차도록 설정 */
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* 우측 상단 언어 선택 팝업 디자인 */
+        /* 2. 우측 상단 언어 선택 팝업 디자인 */
         .lang-popup {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 8px 15px;
-            border-radius: 20px; /* 둥근 모서리 */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* 부드러운 그림자 */
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 10;
+            position: absolute; top: 20px; right: 20px; background: white; padding: 8px 15px;
+            border-radius: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 8px; z-index: 10;
         }
+        #language-select { border: none; outline: none; font-size: 14px; background: transparent; cursor: pointer; }
 
-        /* 언어 선택 텍스트 버튼 디자인 */
-        #language-select {
-            border: none;
-            outline: none;
-            font-size: 14px;
-            background: transparent;
-            cursor: pointer;
-        }
-
-        /* Mapbox 툴팁 둥근 모서리 및 그림자 디자인 */
+        /* 3. 팝업(툴팁) 공통 디자인 (둥근 모서리와 그림자) */
         .mapboxgl-popup-content {
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            font-size: 14px;
+            border-radius: 12px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); padding: 15px; font-size: 14px;
         }
+
+        /* 4. 뉴스 & 유튜브 메인 팝업 디자인 */
+        .news-popup { min-width: 260px; }
+        .news-popup h3 { margin: 0 0 10px 0; font-size: 18px; color: #1a73e8; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .news-item { margin-bottom: 12px; }
+        .news-item strong { display: block; font-size: 14px; color: #333; margin-bottom: 4px; }
+        .news-item p { margin: 0; font-size: 12px; color: #666; }
+        .video-container { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 10px; background: #000; }
+        
+        /* 5. 마우스 호버 시 따라다니는 작은 툴팁 디자인 */
+        .hover-popup .mapboxgl-popup-content {
+            background: rgba(0, 0, 0, 0.8); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px;
+            pointer-events: none; /* 마우스 클릭 방해 방지 */ box-shadow: none;
+        }
+        .hover-popup .mapboxgl-popup-tip { display: none; /* 꼬리표 숨김 */ }
     </style>
 </head>
 <body>
-    <!-- 3D 지도가 그려질 영역 -->
     <div id="map"></div>
 
-    <!-- 우측 상단 언어 선택 팝업 영역 -->
     <div class="lang-popup">
-        <!-- 인라인 SVG 지구본 아이콘 -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="globe-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="2" y1="12" x2="22" y2="12"></line>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -78,46 +54,125 @@
         <select id="language-select">
             <option value="ko">한국어</option>
             <option value="en">English</option>
-            <option value="ja">日本語</option>
         </select>
     </div>
 
-    <!-- 기능 (JavaScript) 영역 -->
     <script>
-        // 1. Mapbox 토큰 설정 (회원님의 실제 토큰 적용 완료)
+        // 1. 회원님의 Mapbox 토큰
         mapboxgl.accessToken = 'pk.eyJ1IjoiZG80NDkiLCJhIjoiY21zY2sycmU0MWszbDJ4b2RiZGU4cjBmciJ9.Er4jq7iEltaGLG8_JmVgIw';
 
         // 2. 3D 지구본 생성
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/satellite-streets-v12', // 위성 지도 스타일
-            center: [126.9780, 37.5665], // 초기 중심 좌표 (대한민국 서울)
+            style: 'mapbox://styles/mapbox/satellite-streets-v12',
+            center: [126.9780, 37.5665],
             zoom: 2,
-            projection: 'globe' // 3D 지구본 모드 활성화
+            projection: 'globe'
         });
 
-        // 3. 우주 배경 및 대기권 효과 추가 (더욱 사실적인 지구본 연출)
+        // 우주 배경 효과
         map.on('style.load', () => {
-            map.setFog({
-                'color': 'rgb(186, 210, 235)',
-                'high-color': 'rgb(36, 92, 223)',
-                'space-color': 'rgb(11, 11, 25)'
-            });
+            map.setFog({ 'color': 'rgb(186, 210, 235)', 'high-color': 'rgb(36, 92, 223)', 'space-color': 'rgb(11, 11, 25)' });
         });
 
-        // 4. 예시 툴팁 마커 추가 (추후 뉴스 API 연동 자리)
-        const popup = new mapboxgl.Popup({ offset: 25 })
-            .setHTML('<h3>한국 뉴스</h3><p>이곳에 글로벌 뉴스 API 데이터가 들어갈 예정입니다.</p>');
+        // 3. 지도가 완전히 로딩된 후 나라 데이터 추가
+        map.on('load', () => {
+            
+            // 전 세계 국가 데이터(GeoJSON)를 외부에서 불러와서 지도에 넣습니다.
+            map.addSource('countries', {
+                type: 'geojson',
+                data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_countries.geojson',
+                generateId: true // 마우스 호버 효과를 위해 자동으로 고유 ID 생성
+            });
 
-        new mapboxgl.Marker()
-            .setLngLat([126.9780, 37.5665])
-            .setPopup(popup)
-            .addTo(map);
+            // 투명한 나라 면적 레이어 추가 (마우스 호버 시 파란색으로 변함)
+            map.addLayer({
+                id: 'country-fills',
+                type: 'fill',
+                source: 'countries',
+                paint: {
+                    'fill-color': '#1a73e8', // 선택 시 칠해질 파란색
+                    'fill-opacity': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        0.4, // 마우스가 올라갔을 때의 투명도 (40%)
+                        0    // 평소 투명도 (0% = 안 보임)
+                    ]
+                }
+            });
 
-        // 5. 언어 선택 기능 이벤트 (선택 시 터미널에 기록)
-        document.getElementById('language-select').addEventListener('change', function(e) {
-            console.log("선택된 언어:", e.target.value);
-            // 추후 이곳에 언어별 데이터를 다시 불러오는 코드를 작성할 예정입니다.
+            // 얇은 하얀색 나라 경계선 레이어 추가
+            map.addLayer({
+                id: 'country-borders',
+                type: 'line',
+                source: 'countries',
+                paint: {
+                    'line-color': '#ffffff',
+                    'line-width': 1,
+                    'line-opacity': 0.3
+                }
+            });
+
+            // 호버 및 클릭 기능을 위한 변수 설정
+            let hoveredStateId = null;
+            const hoverPopup = new mapboxgl.Popup({ closeButton: false, className: 'hover-popup' });
+
+            // [이벤트 1] 마우스가 나라 위로 움직일 때 (Hover)
+            map.on('mousemove', 'country-fills', (e) => {
+                if (e.features.length > 0) {
+                    // 이전 나라의 호버 색상을 뺌
+                    if (hoveredStateId !== null) {
+                        map.setFeatureState({ source: 'countries', id: hoveredStateId }, { hover: false });
+                    }
+                    // 현재 마우스가 있는 나라에 호버 색상을 넣음
+                    hoveredStateId = e.features[0].id;
+                    map.setFeatureState({ source: 'countries', id: hoveredStateId }, { hover: true });
+
+                    // 마우스를 따라다니는 작은 툴팁에 나라 이름 표시
+                    const countryName = e.features[0].properties.admin; // 데이터에서 나라 이름 추출
+                    hoverPopup.setLngLat(e.lngLat).setHTML(countryName).addTo(map);
+                    
+                    // 마우스 커서를 손가락 모양으로 변경
+                    map.getCanvas().style.cursor = 'pointer';
+                }
+            });
+
+            // [이벤트 2] 마우스가 나라 밖으로 나갈 때
+            map.on('mouseleave', 'country-fills', () => {
+                if (hoveredStateId !== null) {
+                    map.setFeatureState({ source: 'countries', id: hoveredStateId }, { hover: false });
+                }
+                hoveredStateId = null;
+                hoverPopup.remove(); // 작은 툴팁 숨기기
+                map.getCanvas().style.cursor = '';
+            });
+
+            // [이벤트 3] 나라를 클릭했을 때 뉴스 및 영상 팝업 띄우기
+            map.on('click', 'country-fills', (e) => {
+                const countryName = e.features[0].properties.admin;
+                const coordinates = e.lngLat;
+
+                // 뉴스 기사와 유튜브 영상 플레이스홀더(가짜 데이터) HTML 작성
+                const popupContent = `
+                    <div class="news-popup">
+                        <h3>${countryName} 최신 이슈</h3>
+                        <div class="news-item">
+                            <strong>📰 [속보] ${countryName}의 경제 및 정치 동향</strong>
+                            <p>추후 News API를 연결하여 실제 기사 요약이 이곳에 표시됩니다.</p>
+                        </div>
+                        <div class="video-container">
+                            <!-- 유튜브 영상 뼈대 (임시 영상) -->
+                            <iframe width="100%" height="150" src="https://www.youtube.com/embed/jfKfPfyJRdk" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                `;
+
+                // 기존 마커 팝업 대신 클릭한 위치에 메인 팝업 생성
+                new mapboxgl.Popup({ offset: 15 })
+                    .setLngLat(coordinates)
+                    .setHTML(popupContent)
+                    .addTo(map);
+            });
         });
     </script>
 </body>
