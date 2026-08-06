@@ -3,28 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldMapIssue - 글로벌 공식 뉴스 맵 (V6.0 정밀 검색)</title>
+    <title>WorldMapIssue - 글로벌 공식 뉴스 맵 (V6.1 채널 고정 완료)</title>
     
     <!-- Mapbox GL JS 라이브러리 -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
     
     <style>
-        /* 기본 레이아웃 */
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000; overflow: hidden; }
         #map { width: 100%; height: 100vh; z-index: 1; }
 
-        /* UI 컨트롤 (언어 선택기) */
         #ui-controls {
             position: absolute; top: 20px; right: 20px; z-index: 10;
             background: rgba(0, 0, 0, 0.7); padding: 10px 15px;
             border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); color: white; font-weight: bold;
         }
-        #ui-controls select {
-            margin-left: 10px; padding: 5px; border-radius: 4px; font-weight: bold; border: none; cursor: pointer;
-        }
+        #ui-controls select { margin-left: 10px; padding: 5px; border-radius: 4px; font-weight: bold; border: none; cursor: pointer; }
 
-        /* 툴팁 및 팝업 디자인 */
         #hover-tooltip {
             position: absolute; display: none; background-color: rgba(0, 0, 0, 0.85); 
             color: #ffffff; padding: 8px 14px; border-radius: 6px; font-size: 15px; font-weight: bold; pointer-events: none; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.3); text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
@@ -110,7 +105,6 @@
     </div>
 
     <script>
-        // API 키 설정
         const YOUTUBE_API_KEY = 'AIzaSyCABI0Nr5UfNfyRwU6etLrgh8bmelM1Yhc'; 
         const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZG80NDkiLCJhIjoiY21zY2sycmU0MWszbDJ4b2RiZGU4cjBmciJ9.Er4jq7iEltaGLG8_JmVgIw';
         const NEWS_API_KEY = 'pub_6dd0bb1958db4e63b77c0ae403f94194'; 
@@ -126,7 +120,6 @@
             newsCache = {}; 
         });
 
-        // 3D 지도 렌더링
         const map = new mapboxgl.Map({
             container: 'map', style: 'mapbox://styles/mapbox/satellite-streets-v12', 
             center: [126.9780, 37.5665], zoom: 1.5, projection: 'globe' 
@@ -149,7 +142,6 @@
         const tooltip = document.getElementById('hover-tooltip');
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-        // 마우스 호버(PC 전용)
         map.on('mousemove', 'country-fills', (e) => {
             if (isTouchDevice) return; 
             if (e.features.length > 0) {
@@ -168,34 +160,29 @@
             map.getCanvas().style.cursor = ''; map.setFilter('country-fills-hover', ['==', 'name', '']); tooltip.style.display = 'none'; 
         });
 
-        // ==========================================
-        // [핵심 업그레이드] 국가별 방송국 정보 및 채널 고유 ID 사전
-        // ==========================================
-        
-        // 1. 공영방송 이름 (텍스트 뉴스 및 기본 검색용)
+        // =========================================================================
+        // [업데이트 완료] 국가별 공식 방송국 데이터베이스
+        // 베트남(VN)에 VTV 뉴스 채널 ID를 완벽하게 적용했습니다.
+        // =========================================================================
         const PUBLIC_BROADCASTERS = {
             'KR': 'KBS 뉴스', 'JP': 'NHK ニュース', 'CN': 'CCTV 新闻', 'TW': 'PTS 台灣公共電視', 
-            'IN': 'DD News', 'VN': 'VTV News', 'US': 'PBS NewsHour', 'GB': 'BBC News', 'FR': 'France 24', 'DE': 'Tagesschau'
+            'IN': 'DD News', 'VN': 'VTV News', 'US': 'PBS NewsHour', 'GB': 'BBC News'
         };
 
-        // 2. [가장 완벽한 방어막] 주요 국가 공식 채널 고유 ID
-        // 이 ID가 있는 국가는 다른 개인 유튜버가 절대 끼어들 수 없습니다.
         const OFFICIAL_CHANNELS = {
-            'KR': 'UCcQTRi69dsVYHN3exePtZ1A', // KBS News
-            'GB': 'UC16niRr50-MSBwiO3YDb3RA', // BBC News
-            'US': 'UC6ZFN9Tx6xh-skXCuRHCDpQ', // PBS NewsHour
-            'JP': 'UCGCZAYq5OEM337424tU1rZA', // ANN News (일본 대표)
-            'VN': 'UCjHMMtZExQoQhXN2E6613hQ', // VTV24 (베트남 공영)
-            'FR': 'UCCCPCZNChQdGa9EkATeyeEQ', // France 24
-            'DE': 'UC5NOEUbkLheQcaaRldYW5GA'  // Tagesschau
+            'KR': 'UCcQTRi69dsVYHN3exePtZ1A', 
+            'GB': 'UC16niRr50-MSBwiO3YDb3RA', 
+            'US': 'UC6ZFN9Tx6xh-skXCuRHCDpQ', 
+            'JP': 'UCGCZAYq5OEM337424tU1rZA', 
+            // 아래가 베트남 VTV 공식 채널 ID입니다.
+            'VN': 'UCjHMMtZExQoQhXN2E6613hQ' 
         };
 
         function getCountryLangCode(countryCode) {
-            const langMap = { 'KR': 'ko', 'JP': 'ja', 'CN': 'zh-CN', 'TW': 'zh-TW', 'IN': 'hi', 'VN': 'vi', 'US': 'en', 'GB': 'en', 'FR': 'fr', 'DE': 'de' };
+            const langMap = { 'KR': 'ko', 'JP': 'ja', 'CN': 'zh-CN', 'TW': 'zh-TW', 'IN': 'hi', 'VN': 'vi', 'US': 'en', 'GB': 'en' };
             return langMap[countryCode] || 'en'; 
         }
 
-        // 지도 클릭 (PC 및 모바일 분기)
         map.on('click', async function(e) {
             let lat = e.lngLat.lat; let lng = e.lngLat.lng;
             while (lng > 180) lng -= 360; while (lng < -180) lng += 360;
@@ -232,15 +219,11 @@
                 let searchKeyword = PUBLIC_BROADCASTERS[locationInfo.code] || "Official News";
                 const translatedCountry = await translateText(locationInfo.name, localLangCode);
                 
-                // 유튜브 검색을 위한 키워드 조립
-                let youtubeQuery = `${searchKeyword} ${translatedCountry}`;
-                
                 let [videoId, textNews] = await Promise.all([
-                    getNewsVideo(locationInfo.code, youtubeQuery), // 정교해진 유튜브 함수 호출
+                    getNewsVideo(locationInfo.code, searchKeyword, translatedCountry),
                     getTextNews(locationInfo.code, translatedCountry)
                 ]);
                 
-                // 번역 처리 로직
                 if (textNews) {
                     const translationPromises = [translateText(textNews.title, currentTargetLang)];
                     if (textNews.description) translationPromises.push(translateText(textNews.description, currentTargetLang));
@@ -278,10 +261,10 @@
             } catch (error) { return { name: "주소 확인 불가", code: "" }; }
         }
 
-        // ==========================================
-        // [핵심 업그레이드] 정교한 유튜브 검색 함수
-        // ==========================================
-        async function getNewsVideo(countryCode, searchKeyword) {
+        // =========================================================================
+        // 유튜브 영상 호출 함수 (채널이 지정된 경우 해당 채널 영상만 가져오도록 강제)
+        // =========================================================================
+        async function getNewsVideo(countryCode, searchKeyword, countryName) {
             if (!countryCode) return '';
             try {
                 const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -290,33 +273,23 @@
                 let encodedQuery = "";
                 let channelParam = "";
 
-                // 1. OFFICIAL_CHANNELS에 등록된 국가인지 확인
                 if (OFFICIAL_CHANNELS[countryCode]) {
-                    // 등록된 국가라면 채널 ID를 파라미터에 추가하여 무조건 해당 채널만 검색되도록 강제함
+                    // 공식 채널 ID가 있다면, 해당 채널 안에서 최신 뉴스를 가져옵니다. (키워드 간소화)
                     channelParam = `&channelId=${OFFICIAL_CHANNELS[countryCode]}`;
-                    encodedQuery = encodeURIComponent(searchKeyword);
+                    encodedQuery = encodeURIComponent("news"); 
                 } else {
-                    // 2. 등록되지 않은 나머지 전 세계 국가를 위한 스마트 필터링 (개인 채널 배제)
-                    // 검색어 뒤에 "official news"를 강제 추가하고, 개인 유튜버용 단어(-vlog, -review, -reaction, -opinion)를 마이너스 기호로 제외합니다.
-                    const strictQuery = `${searchKeyword} official news -vlog -review -reaction -opinion`;
+                    // 지정된 공식 채널이 없는 국가일 경우에만 일반 검색 수행 (개인 채널 필터링 키워드 추가)
+                    const strictQuery = `${searchKeyword} ${countryName} official news -vlog -review -reaction -opinion`;
                     encodedQuery = encodeURIComponent(strictQuery);
                 }
                 
-                // 첫 번째 시도: 최근 24시간 내 영상 + 뉴스 카테고리(25) + (채널 고정 또는 엄격한 검색어)
-                let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&publishedAfter=${publishedAfter}&order=relevance${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&publishedAfter=${publishedAfter}&order=date${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 let response = await fetch(url);
                 if (!response.ok) return '';
                 let data = await response.json();
                 if (data.items && data.items.length > 0) return data.items[0].id.videoId;
 
-                // 두 번째 시도: 최근 24시간 조건 해제 (업로드가 뜸한 국가 대비)
-                url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&order=relevance${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
-                response = await fetch(url);
-                data = await response.json();
-                if (data.items && data.items.length > 0) return data.items[0].id.videoId;
-
-                // 세 번째 시도: 뉴스 카테고리(25) 조건 해제 (공영방송이 뉴스 카테고리 설정을 안 한 경우 대비)
-                url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoEmbeddable=true&order=relevance${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoEmbeddable=true&order=date${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 response = await fetch(url);
                 data = await response.json();
                 if (data.items && data.items.length > 0) return data.items[0].id.videoId;
