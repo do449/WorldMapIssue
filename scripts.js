@@ -1,15 +1,12 @@
 // ============================================================================
-// 🌍 1. 전 세계 주요 국가별 실제 현지 공영/공식 언론사 데이터베이스
+// 🌍 1. 전 세계 40+ 국가별 실제 현지 공영/공식 언론사 데이터베이스
 // ============================================================================
 const localNewsData = {
   // --- 아시아 (Asia) ---
   "KR": {
     countryName: "대한민국",
-    youtubeLinks: [
-      { name: "KBS News", url: "https://www.youtube.com/c/kbsworldtv" },
-      { name: "MBC News", url: "https://www.youtube.com/c/MBCnews" }
-    ],
-    textLinks: [{ name: "연합뉴스 (Yonhap)", url: "https://en.yna.co.kr/" }]
+    youtubeLinks: [{ name: "KBS News", url: "https://www.youtube.com/c/kbsworldtv" }, { name: "MBC News", url: "https://www.youtube.com/c/MBCnews" }],
+    textLinks: [{ name: "연합뉴스", url: "https://en.yna.co.kr/" }]
   },
   "JP": {
     countryName: "일본",
@@ -18,10 +15,7 @@ const localNewsData = {
   },
   "CN": {
     countryName: "중국",
-    youtubeLinks: [
-      { name: "CCTV", url: "https://www.youtube.com/c/CCTV" },
-      { name: "CGTN", url: "https://www.youtube.com/c/cgtn" }
-    ],
+    youtubeLinks: [{ name: "CCTV", url: "https://www.youtube.com/c/CCTV" }, { name: "CGTN", url: "https://www.youtube.com/c/cgtn" }],
     textLinks: [{ name: "Xinhua", url: "https://english.news.cn/" }]
   },
   "IN": {
@@ -39,18 +33,32 @@ const localNewsData = {
     youtubeLinks: [{ name: "CNA", url: "https://www.youtube.com/c/channelnewsasia" }],
     textLinks: [{ name: "CNA", url: "https://www.channelnewsasia.com/" }]
   },
+  "VN": {
+    countryName: "베트남",
+    youtubeLinks: [{ name: "VTV24", url: "https://www.youtube.com/c/vtv24" }],
+    textLinks: [{ name: "VNExpress", url: "https://e.vnexpress.net/" }]
+  },
+  "TH": {
+    countryName: "태국",
+    youtubeLinks: [{ name: "Thai PBS", url: "https://www.youtube.com/c/ThaiPBS" }],
+    textLinks: [{ name: "Bangkok Post", url: "https://www.bangkokpost.com/" }]
+  },
+  "PH": {
+    countryName: "필리핀",
+    youtubeLinks: [{ name: "ABS-CBN News", url: "https://www.youtube.com/user/ABSCBNNews" }],
+    textLinks: [{ name: "Inquirer", url: "https://www.inquirer.net/" }]
+  },
+  "MY": {
+    countryName: "말레이시아",
+    youtubeLinks: [{ name: "Astro AWANI", url: "https://www.youtube.com/c/astroawani" }],
+    textLinks: [{ name: "The Star", url: "https://www.thestar.com.my/" }]
+  },
 
   // --- 아메리카 (Americas) ---
   "US": {
     countryName: "미국",
-    youtubeLinks: [
-      { name: "PBS NewsHour", url: "https://www.youtube.com/c/PBSNewsHour" },
-      { name: "ABC News", url: "https://www.youtube.com/user/ABCNews" }
-    ],
-    textLinks: [
-      { name: "AP News", url: "https://apnews.com/" },
-      { name: "NPR", url: "https://www.npr.org/" }
-    ]
+    youtubeLinks: [{ name: "PBS NewsHour", url: "https://www.youtube.com/c/PBSNewsHour" }, { name: "ABC News", url: "https://www.youtube.com/user/ABCNews" }],
+    textLinks: [{ name: "AP News", url: "https://apnews.com/" }, { name: "NPR", url: "https://www.npr.org/" }]
   },
   "CA": {
     countryName: "캐나다",
@@ -66,6 +74,26 @@ const localNewsData = {
     countryName: "멕시코",
     youtubeLinks: [{ name: "Canal Once", url: "https://www.youtube.com/c/CanalOnceIPN" }],
     textLinks: [{ name: "El Universal", url: "https://www.eluniversal.com.mx/" }]
+  },
+  "AR": {
+    countryName: "아르헨티나",
+    youtubeLinks: [{ name: "Televisión Pública", url: "https://www.youtube.com/c/TVPublicaArgentina" }],
+    textLinks: [{ name: "Télam", url: "https://www.telam.com.ar/" }]
+  },
+  "CL": {
+    countryName: "칠레",
+    youtubeLinks: [{ name: "TVN", url: "https://www.youtube.com/c/tvn" }],
+    textLinks: [{ name: "La Tercera", url: "https://www.latercera.com/" }]
+  },
+  "CO": {
+    countryName: "콜롬비아",
+    youtubeLinks: [{ name: "Noticias Caracol", url: "https://www.youtube.com/c/NoticiasCaracol" }],
+    textLinks: [{ name: "El Tiempo", url: "https://www.eltiempo.com/" }]
+  },
+  "PE": {
+    countryName: "페루",
+    youtubeLinks: [{ name: "TV Perú", url: "https://www.youtube.com/c/TVPerúOficial" }],
+    textLinks: [{ name: "El Comercio", url: "https://elcomercio.pe/" }]
   },
 
   // --- 유럽 (Europe) ---
@@ -93,6 +121,36 @@ const localNewsData = {
     countryName: "스페인",
     youtubeLinks: [{ name: "RTVE", url: "https://www.youtube.com/c/rtvenoticias" }],
     textLinks: [{ name: "EFE", url: "https://efe.com/en/" }]
+  },
+  "SE": {
+    countryName: "스웨덴",
+    youtubeLinks: [{ name: "SVT Nyheter", url: "https://www.youtube.com/c/svtnyheter" }],
+    textLinks: [{ name: "The Local SE", url: "https://www.thelocal.se/" }]
+  },
+  "NL": {
+    countryName: "네덜란드",
+    youtubeLinks: [{ name: "NOS", url: "https://www.youtube.com/c/NOS" }],
+    textLinks: [{ name: "NOS News", url: "https://nos.nl/" }]
+  },
+  "CH": {
+    countryName: "스위스",
+    youtubeLinks: [{ name: "SRF News", url: "https://www.youtube.com/c/srfnews" }],
+    textLinks: [{ name: "Swissinfo", url: "https://www.swissinfo.ch/eng" }]
+  },
+  "GR": {
+    countryName: "그리스",
+    youtubeLinks: [{ name: "ERT", url: "https://www.youtube.com/c/ERTsocial" }],
+    textLinks: [{ name: "Ekathimerini", url: "https://www.ekathimerini.com/" }]
+  },
+  "PT": {
+    countryName: "포르투갈",
+    youtubeLinks: [{ name: "RTP", url: "https://www.youtube.com/c/RTP" }],
+    textLinks: [{ name: "The Portugal News", url: "https://www.theportugalnews.com/" }]
+  },
+  "PL": {
+    countryName: "폴란드",
+    youtubeLinks: [{ name: "TVP Info", url: "https://www.youtube.com/c/tvpinfo" }],
+    textLinks: [{ name: "Notes from Poland", url: "https://notesfrompoland.com/" }]
   },
 
   // --- 오세아니아 (Oceania) ---
@@ -122,6 +180,26 @@ const localNewsData = {
     countryName: "튀르키예",
     youtubeLinks: [{ name: "TRT World", url: "https://www.youtube.com/c/trtworld" }],
     textLinks: [{ name: "Anadolu Agency", url: "https://www.aa.com.tr/en" }]
+  },
+  "AE": {
+    countryName: "아랍에미리트",
+    youtubeLinks: [{ name: "Al Jazeera English", url: "https://www.youtube.com/c/aljazeeraenglish" }],
+    textLinks: [{ name: "Khaleej Times", url: "https://www.khaleejtimes.com/" }]
+  },
+  "EG": {
+    countryName: "이집트",
+    youtubeLinks: [{ name: "Nile TV", url: "https://www.youtube.com/user/NileTVInternational" }],
+    textLinks: [{ name: "Ahram Online", url: "https://english.ahram.org.eg/" }]
+  },
+  "NG": {
+    countryName: "나이지리아",
+    youtubeLinks: [{ name: "Channels Television", url: "https://www.youtube.com/c/channelsweb" }],
+    textLinks: [{ name: "Vanguard", url: "https://www.vanguardngr.com/" }]
+  },
+  "KE": {
+    countryName: "케냐",
+    youtubeLinks: [{ name: "Citizen TV", url: "https://www.youtube.com/c/citizentvkenya" }],
+    textLinks: [{ name: "Daily Nation", url: "https://nation.africa/kenya" }]
   },
 
   // ============================================================================
@@ -160,8 +238,8 @@ function updateNewsLinks(countryCode) {
     newsInfo.youtubeLinks.forEach(link => {
       const btn = document.createElement('a');
       btn.href = link.url;
-      btn.target = "_blank"; // 새 창에서 열기
-      btn.className = "news-btn youtube-btn"; // 버튼 스타일 지정
+      btn.target = "_blank"; 
+      btn.className = "news-btn youtube-btn"; 
       btn.innerText = `▶ ${link.name}`;
       youtubeContainer.appendChild(btn);
     });
