@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldMapIssue - 글로벌 공식 뉴스 맵 (V6.1 채널 고정 완료)</title>
+    <title>WorldMapIssue - 글로벌 공식 뉴스 맵 (V6.2 영상 누락 버그 수정)</title>
     
-    <!-- Mapbox GL JS 라이브러리 -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
     
@@ -105,6 +104,7 @@
     </div>
 
     <script>
+        // API 키 설정 (보안상 실제 배포 시에는 백엔드 환경변수 사용을 권장합니다)
         const YOUTUBE_API_KEY = 'AIzaSyCABI0Nr5UfNfyRwU6etLrgh8bmelM1Yhc'; 
         const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoiZG80NDkiLCJhIjoiY21zY2sycmU0MWszbDJ4b2RiZGU4cjBmciJ9.Er4jq7iEltaGLG8_JmVgIw';
         const NEWS_API_KEY = 'pub_6dd0bb1958db4e63b77c0ae403f94194'; 
@@ -160,10 +160,6 @@
             map.getCanvas().style.cursor = ''; map.setFilter('country-fills-hover', ['==', 'name', '']); tooltip.style.display = 'none'; 
         });
 
-        // =========================================================================
-        // [업데이트 완료] 국가별 공식 방송국 데이터베이스
-        // 베트남(VN)에 VTV 뉴스 채널 ID를 완벽하게 적용했습니다.
-        // =========================================================================
         const PUBLIC_BROADCASTERS = {
             'KR': 'KBS 뉴스', 'JP': 'NHK ニュース', 'CN': 'CCTV 新闻', 'TW': 'PTS 台灣公共電視', 
             'IN': 'DD News', 'VN': 'VTV News', 'US': 'PBS NewsHour', 'GB': 'BBC News'
@@ -173,9 +169,8 @@
             'KR': 'UCcQTRi69dsVYHN3exePtZ1A', 
             'GB': 'UC16niRr50-MSBwiO3YDb3RA', 
             'US': 'UC6ZFN9Tx6xh-skXCuRHCDpQ', 
-            'JP': 'UCGCZAYq5OEM337424tU1rZA', 
-            // 아래가 베트남 VTV 공식 채널 ID입니다.
-            'VN': 'UCjHMMtZExQoQhXN2E6613hQ' 
+            'JP': 'UCGCZAYq5OEM337424tU1rZA', // ANN News (일본)
+            'VN': 'UCjHMMtZExQoQhXN2E6613hQ'  // VTV24 (베트남)
         };
 
         function getCountryLangCode(countryCode) {
@@ -262,7 +257,7 @@
         }
 
         // =========================================================================
-        // 유튜브 영상 호출 함수 (채널이 지정된 경우 해당 채널 영상만 가져오도록 강제)
+        // [수정 핵심] 언어 의존성을 제거한 스마트 유튜브 영상 호출 함수
         // =========================================================================
         async function getNewsVideo(countryCode, searchKeyword, countryName) {
             if (!countryCode) return '';
@@ -270,29 +265,43 @@
                 const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
                 const publishedAfter = yesterday.toISOString();
                 
-                let encodedQuery = "";
+                let queryParam = "";
                 let channelParam = "";
+                let categoryParam = "";
 
                 if (OFFICIAL_CHANNELS[countryCode]) {
-                    // 공식 채널 ID가 있다면, 해당 채널 안에서 최신 뉴스를 가져옵니다. (키워드 간소화)
+                    // 1. 공식 채널이 있는 국가 (일본, 베트남 등)
+                    // 검색어(q)를 아예 비워서 언어 충돌 방지. 무조건 해당 채널의 최신 영상만 가져옴.
                     channelParam = `&channelId=${OFFICIAL_CHANNELS[countryCode]}`;
-                    encodedQuery = encodeURIComponent("news"); 
+                    queryParam = ``; // 중요: 검색어 제외
                 } else {
-                    // 지정된 공식 채널이 없는 국가일 경우에만 일반 검색 수행 (개인 채널 필터링 키워드 추가)
+                    // 2. 공식 채널이 없는 국가 (나머지 전 세계)
+                    // 검색어를 정밀하게 조합하고 카테고리를 뉴스(25)로 강제 지정
                     const strictQuery = `${searchKeyword} ${countryName} official news -vlog -review -reaction -opinion`;
-                    encodedQuery = encodeURIComponent(strictQuery);
+                    queryParam = `&q=${encodeURIComponent(strictQuery)}`;
+                    categoryParam = `&videoCategoryId=25`;
                 }
                 
-                let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoCategoryId=25&videoEmbeddable=true&publishedAfter=${publishedAfter}&order=date${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                // 1차 시도: 최근 24시간 이내 + (채널 ID 또는 카테고리 지정)
+                let url = `https://www.googleapis.com/youtube/v3/search?part=snippet${queryParam}&type=video&videoEmbeddable=true${categoryParam}&publishedAfter=${publishedAfter}&order=date${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 let response = await fetch(url);
                 if (!response.ok) return '';
                 let data = await response.json();
                 if (data.items && data.items.length > 0) return data.items[0].id.videoId;
 
-                url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodedQuery}&type=video&videoEmbeddable=true&order=date${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                // 2차 시도: 24시간 제한 해제 (영상이 최근에 안 올라온 경우 대비)
+                url = `https://www.googleapis.com/youtube/v3/search?part=snippet${queryParam}&type=video&videoEmbeddable=true${categoryParam}&order=date${channelParam}&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 response = await fetch(url);
                 data = await response.json();
                 if (data.items && data.items.length > 0) return data.items[0].id.videoId;
+                
+                // 3차 시도 (공식 채널이 없는 국가용 최후 수단): 뉴스 카테고리(25) 조건 해제 및 연관도순 정렬
+                if (!OFFICIAL_CHANNELS[countryCode]) {
+                    url = `https://www.googleapis.com/youtube/v3/search?part=snippet${queryParam}&type=video&videoEmbeddable=true&order=relevance&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                    response = await fetch(url);
+                    data = await response.json();
+                    if (data.items && data.items.length > 0) return data.items[0].id.videoId;
+                }
 
                 return ''; 
             } catch (error) {
