@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldMapIssue - 글로벌 공식 뉴스 맵 (V9.2 글로벌 동적 언어 감지 시스템)</title>
+    <title>WorldMapIssue - 글로벌 공식 뉴스 맵 (V9.3 줌 애니메이션 & 글로벌 미디어 확장)</title>
     
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
@@ -25,10 +25,14 @@
             color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; pointer-events: none; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
         }
 
+        /* 💡 모달 애니메이션 추가 (Fade-in / Scale-up) */
         #news-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 92%; max-width: 640px; 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); width: 92%; max-width: 640px; 
             background: #ffffff; padding: 30px; border-radius: 24px; box-shadow: 0 24px 50px rgba(0,0,0,0.25); z-index: 1000; max-height: 85vh; overflow-y: auto; 
+            opacity: 0; transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        #news-modal.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
         .close-btn { float: right; cursor: pointer; font-size: 26px; color: #9aa0a6; font-weight: bold; transition: color 0.2s; margin-top: -10px; margin-right: -10px; width: 36px; height: 36px; text-align: center; line-height: 36px; border-radius: 50%; }
         .close-btn:hover { color: #202124; background: #f1f3f4; }
         
@@ -54,6 +58,10 @@
 
         #loading-msg { display: none; color: #1a73e8; font-weight: 700; margin-bottom: 10px; text-align: center; padding: 40px 0; font-size: 1.1em;}
         #error-msg { display: none; color: #d93025; font-weight: 700; margin-bottom: 10px; text-align: center; background: #fce8e6; padding: 15px; border-radius: 8px; }
+        
+        /* 모달 배경 오버레이 추가 */
+        #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; opacity: 0; transition: opacity 0.3s ease; }
+        #modal-overlay.show { display: block; opacity: 1; }
 
         @media (max-width: 768px) {
             #news-modal { width: 90%; padding: 20px; border-radius: 20px; }
@@ -77,6 +85,7 @@
     <div id="map"></div>
     <div id="hover-tooltip">국가 이름</div>
 
+    <div id="modal-overlay" onclick="closeModal()"></div>
     <div id="news-modal">
         <span class="close-btn" onclick="closeModal()">✖</span>
         <h3 id="news-title">지역 뉴스</h3>
@@ -151,13 +160,9 @@
         let currentTargetLang = 'ko'; 
         let newsCache = {};
 
-        // =========================================================================
-        // [핵심 로직] 브라우저 언어 자동 감지 및 스마트 글로벌 표준 폴백 처리
-        // =========================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const userLang = navigator.language || navigator.userLanguage; 
-            const shortLang = userLang.split('-')[0]; // 예: 'km'(캄보디아), 'vi'(베트남) 등 추출
-            
+            const shortLang = userLang.split('-')[0]; 
             const supportedLangs = ['ko', 'en', 'ja', 'zh', 'es'];
 
             if (shortLang === 'zh') {
@@ -165,7 +170,6 @@
             } else if (supportedLangs.includes(shortLang)) {
                 currentTargetLang = shortLang;
             } else {
-                // 💡 캄보디아, 베트남, 프랑스 등 사전에 없는 언어권 접속 시 전 세계 공용어인 '영어(en)'로 안전하게 세팅
                 currentTargetLang = 'en';
             }
             
@@ -212,31 +216,18 @@
             map.getCanvas().style.cursor = ''; map.setFilter('country-fills-hover', ['==', 'name', '']); tooltip.style.display = 'none'; 
         });
 
+        // 💡 2. 데이터 추가: 프랑스, 독일, 호주 등 주요 언론사 매핑 확장
         const COUNTRY_RESOURCES = {
-            'KR': {
-                video: [ {name: 'KBS 뉴스', url: 'https://www.youtube.com/@KBS_news'}, {name: 'MBC 뉴스', url: 'https://www.youtube.com/@MBCNEWS11'}, {name: 'YTN', url: 'https://www.youtube.com/@ytnnews24'} ],
-                text: [ {name: 'KBS 뉴스', url: 'https://news.kbs.co.kr/'}, {name: '연합뉴스', url: 'https://www.yna.co.kr/'}, {name: 'KTV 국민방송', url: 'https://www.ktv.go.kr/'} ]
-            },
-            'JP': {
-                video: [ {name: 'NHK ニュース', url: 'https://www.youtube.com/@NHK_news'}, {name: 'ANNnewsCH', url: 'https://www.youtube.com/@ANNnewsCH'}, {name: 'TBS NEWS', url: 'https://www.youtube.com/@tbsnewsdig'} ],
-                text: [ {name: 'NHK News', url: 'https://www3.nhk.or.jp/news/'}, {name: '교도통신(Kyodo)', url: 'https://english.kyodonews.net/'}, {name: '요미우리', url: 'https://www.yomiuri.co.jp/'} ]
-            },
-            'VN': {
-                video: [ {name: 'VTV24 (공영)', url: 'https://www.youtube.com/@vtv24'}, {name: 'VTV1', url: 'https://www.youtube.com/@vtv1'}, {name: 'VTC Now', url: 'https://www.youtube.com/@vtcnow'} ],
-                text: [ {name: 'VTV News', url: 'https://vtv.vn/'}, {name: 'VNExpress', url: 'https://vnexpress.net/'}, {name: 'Tuoi Tre', url: 'https://tuoitre.vn/'} ]
-            },
-            'US': {
-                video: [ {name: 'PBS NewsHour', url: 'https://www.youtube.com/@PBSNewsHour'}, {name: 'AP', url: 'https://www.youtube.com/@AP'}, {name: 'C-SPAN', url: 'https://www.youtube.com/@C-SPAN'} ],
-                text: [ {name: 'PBS', url: 'https://www.pbs.org/newshour/'}, {name: 'AP News', url: 'https://apnews.com/'}, {name: 'NPR', url: 'https://www.npr.org/'} ]
-            },
-            'GB': {
-                video: [ {name: 'BBC News', url: 'https://www.youtube.com/@BBCNews'}, {name: 'Channel 4', url: 'https://www.youtube.com/@Channel4News'}, {name: 'Sky News', url: 'https://www.youtube.com/@SkyNews'} ],
-                text: [ {name: 'BBC', url: 'https://www.bbc.com/news'}, {name: 'Reuters UK', url: 'https://www.reuters.com/'}, {name: 'The Guardian', url: 'https://www.theguardian.com/uk'} ]
-            },
-            'CN': {
-                video: [ {name: 'CCTV', url: 'https://www.youtube.com/@CCTV'}, {name: 'CGTN', url: 'https://www.youtube.com/@cgtn'}, {name: 'Xinhua', url: 'https://www.youtube.com/@XinhuaNewsAgency'} ],
-                text: [ {name: 'CCTV News', url: 'https://news.cctv.com/'}, {name: 'Xinhua', url: 'http://www.xinhuanet.com/'}, {name: 'People\'s Daily', url: 'http://en.people.cn/'} ]
-            }
+            'KR': { video: [ {name: 'KBS 뉴스', url: 'https://www.youtube.com/@KBS_news'}, {name: 'MBC 뉴스', url: 'https://www.youtube.com/@MBCNEWS11'}, {name: 'YTN', url: 'https://www.youtube.com/@ytnnews24'} ], text: [ {name: 'KBS 뉴스', url: 'https://news.kbs.co.kr/'}, {name: '연합뉴스', url: 'https://www.yna.co.kr/'}, {name: 'KTV 국민방송', url: 'https://www.ktv.go.kr/'} ] },
+            'JP': { video: [ {name: 'NHK ニュース', url: 'https://www.youtube.com/@NHK_news'}, {name: 'ANNnewsCH', url: 'https://www.youtube.com/@ANNnewsCH'}, {name: 'TBS NEWS', url: 'https://www.youtube.com/@tbsnewsdig'} ], text: [ {name: 'NHK News', url: 'https://www3.nhk.or.jp/news/'}, {name: '교도통신(Kyodo)', url: 'https://english.kyodonews.net/'}, {name: '요미우리', url: 'https://www.yomiuri.co.jp/'} ] },
+            'VN': { video: [ {name: 'VTV24', url: 'https://www.youtube.com/@vtv24'}, {name: 'VTV1', url: 'https://www.youtube.com/@vtv1'}, {name: 'VTC Now', url: 'https://www.youtube.com/@vtcnow'} ], text: [ {name: 'VTV News', url: 'https://vtv.vn/'}, {name: 'VNExpress', url: 'https://vnexpress.net/'}, {name: 'Tuoi Tre', url: 'https://tuoitre.vn/'} ] },
+            'US': { video: [ {name: 'PBS NewsHour', url: 'https://www.youtube.com/@PBSNewsHour'}, {name: 'AP', url: 'https://www.youtube.com/@AP'}, {name: 'C-SPAN', url: 'https://www.youtube.com/@C-SPAN'} ], text: [ {name: 'PBS', url: 'https://www.pbs.org/newshour/'}, {name: 'AP News', url: 'https://apnews.com/'}, {name: 'NPR', url: 'https://www.npr.org/'} ] },
+            'GB': { video: [ {name: 'BBC News', url: 'https://www.youtube.com/@BBCNews'}, {name: 'Channel 4', url: 'https://www.youtube.com/@Channel4News'}, {name: 'Sky News', url: 'https://www.youtube.com/@SkyNews'} ], text: [ {name: 'BBC', url: 'https://www.bbc.com/news'}, {name: 'Reuters UK', url: 'https://www.reuters.com/'}, {name: 'The Guardian', url: 'https://www.theguardian.com/uk'} ] },
+            'CN': { video: [ {name: 'CCTV', url: 'https://www.youtube.com/@CCTV'}, {name: 'CGTN', url: 'https://www.youtube.com/@cgtn'}, {name: 'Xinhua', url: 'https://www.youtube.com/@XinhuaNewsAgency'} ], text: [ {name: 'CCTV News', url: 'https://news.cctv.com/'}, {name: 'Xinhua', url: 'http://www.xinhuanet.com/'}, {name: 'People\'s Daily', url: 'http://en.people.cn/'} ] },
+            'FR': { video: [ {name: 'France 24', url: 'https://www.youtube.com/@France24'}, {name: 'TF1 Info', url: 'https://www.youtube.com/@TF1Info'}, {name: 'Le Monde', url: 'https://www.youtube.com/@lemonde'} ], text: [ {name: 'France 24', url: 'https://www.france24.com/en/'}, {name: 'Le Monde', url: 'https://www.lemonde.fr/'}, {name: 'Le Figaro', url: 'https://www.lefigaro.fr/'} ] },
+            'DE': { video: [ {name: 'DW News', url: 'https://www.youtube.com/@dwnews'}, {name: 'Tagesschau', url: 'https://www.youtube.com/@tagesschau'}, {name: 'ZDFheute', url: 'https://www.youtube.com/@ZDFheute'} ], text: [ {name: 'DW', url: 'https://www.dw.com/'}, {name: 'Tagesschau', url: 'https://www.tagesschau.de/'}, {name: 'Der Spiegel', url: 'https://www.spiegel.de/'} ] },
+            'AU': { video: [ {name: 'ABC News AU', url: 'https://www.youtube.com/@NewsOnABC'}, {name: 'Sky News Australia', url: 'https://www.youtube.com/@SkyNewsAustralia'}, {name: '7NEWS', url: 'https://www.youtube.com/@7NEWS'} ], text: [ {name: 'ABC News', url: 'https://www.abc.net.au/news'}, {name: 'The Sydney Morning Herald', url: 'https://www.smh.com.au/'}, {name: 'The Australian', url: 'https://www.theaustralian.com.au/'} ] },
+            'CA': { video: [ {name: 'CBC News', url: 'https://www.youtube.com/@CBCNews'}, {name: 'Global News', url: 'https://www.youtube.com/@globalnews'}, {name: 'CTV News', url: 'https://www.youtube.com/@CTVNews'} ], text: [ {name: 'CBC', url: 'https://www.cbc.ca/news'}, {name: 'Global News', url: 'https://globalnews.ca/'}, {name: 'CTV News', url: 'https://www.ctvnews.ca/'} ] }
         };
 
         const DEFAULT_RESOURCES = {
@@ -244,18 +235,38 @@
             text: [ {name: 'Reuters', url: 'https://www.reuters.com/'}, {name: 'AP News', url: 'https://apnews.com/'} ]
         };
 
-        const PUBLIC_BROADCASTERS = { 'KR': 'KBS', 'JP': 'NHK', 'CN': 'CCTV', 'TW': 'PTS', 'IN': 'DD News', 'US': 'PBS', 'GB': 'BBC', 'VN': 'VTV' };
-        const OFFICIAL_CHANNELS = { 'GB': 'UC16niRr50-MSBwiO3YDb3RA', 'US': 'UC6ZFN9Tx6xh-skXCuRHCDpQ', 'JP': 'UCGCZAYq5OEM337424tU1rZA', 'VN': 'UCjHMMtZExQoQhXN2E6613hQ' };
+        const PUBLIC_BROADCASTERS = { 'KR': 'KBS', 'JP': 'NHK', 'CN': 'CCTV', 'TW': 'PTS', 'IN': 'DD News', 'US': 'PBS', 'GB': 'BBC', 'VN': 'VTV', 'FR': 'France 24', 'DE': 'DW', 'AU': 'ABC News', 'CA': 'CBC News' };
+        
+        // 특정 공식 채널 고정 (블락 체크용)
+        const OFFICIAL_CHANNELS = { 'GB': 'UC16niRr50-MSBwiO3YDb3RA', 'US': 'UC6ZFN9Tx6xh-skXCuRHCDpQ', 'JP': 'UCGCZAYq5OEM337424tU1rZA', 'VN': 'UCjHMMtZExQoQhXN2E6613hQ', 'FR': 'UCCQw_O-6gE72ZqD4Rj07pDA', 'DE': 'UCknLrEdhRCp1aegoMqRaCZg' };
 
-        const CUSTOM_QUERIES = { 'KR': '대한민국 최신 뉴스 (KBS OR YTN OR MBC OR SBS) -vlog -music', 'VN': 'Tin tức Việt Nam mới nhất -VTV -VTV24' };
+        // 💡 3. 기능 개선: 뉴스 검색 쿼리(CUSTOM_QUERIES) 최적화
+        const CUSTOM_QUERIES = { 
+            'KR': '대한민국 최신 뉴스 (KBS OR YTN OR MBC OR SBS) -vlog -music', 
+            'VN': 'Tin tức Việt Nam mới nhất -VTV -VTV24',
+            'JP': '日本 最新 ニュース (NHK OR ANN OR TBS) -vlog -music',
+            'US': 'US breaking news (PBS OR AP) -vlog',
+            'FR': 'France actualités (France 24 OR TF1) -vlog',
+            'DE': 'Deutschland aktuelle Nachrichten (DW OR Tagesschau) -vlog'
+        };
 
         function getCountryLangCode(countryCode) {
-            const langMap = { 'KR': 'ko', 'JP': 'ja', 'CN': 'zh-CN', 'TW': 'zh-TW', 'IN': 'hi', 'VN': 'vi', 'US': 'en', 'GB': 'en' };
+            const langMap = { 'KR': 'ko', 'JP': 'ja', 'CN': 'zh-CN', 'TW': 'zh-TW', 'IN': 'hi', 'VN': 'vi', 'US': 'en', 'GB': 'en', 'FR': 'fr', 'DE': 'de', 'AU': 'en', 'CA': 'en', 'ES': 'es' };
             return langMap[countryCode] || 'en'; 
         }
 
         map.on('click', async function(e) {
             let lat = e.lngLat.lat; let lng = e.lngLat.lng;
+            
+            // 💡 1. 줌 애니메이션 효과 추가
+            map.flyTo({
+                center: [lng, lat],
+                zoom: 4, 
+                speed: 1.2, 
+                curve: 1.4, 
+                essential: true 
+            });
+
             fetchAndShowNews(lat, lng);
         });
 
@@ -271,7 +282,7 @@
                     return;
                 }
 
-                let searchKeyword = PUBLIC_BROADCASTERS[locationInfo.code] || "Official";
+                let searchKeyword = PUBLIC_BROADCASTERS[locationInfo.code] || "Official News";
                 const translatedCountry = await translateText(locationInfo.name, localLangCode);
                 
                 let [videoData, textNews] = await Promise.all([
@@ -320,7 +331,7 @@
 
             try {
                 const localLang = getCountryLangCode(countryCode);
-                const strictQuery = CUSTOM_QUERIES[countryCode] || `${searchKeyword} ${countryName} news -vlog -music`;
+                const strictQuery = CUSTOM_QUERIES[countryCode] || `${searchKeyword} ${countryName} official news -vlog -music`;
                 const regionParam = `&regionCode=${countryCode}`;
                 const langParam = `&relevanceLanguage=${localLang}`;
 
@@ -358,18 +369,46 @@
             try {
                 let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${countryCode.toLowerCase()}&q=${encodeURIComponent(localCountryName)}`;
                 let response = await fetch(url);
-                if (!response.ok) return null; let data = await response.json();
-                if (data.results && data.results.length > 0) return data.results[0]; 
                 
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data.results && data.results.length > 0) return data.results[0]; 
+                }
+                
+                // 검색어 없이 국가 코드로만 1차 폴백
                 url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${countryCode.toLowerCase()}`;
-                response = await fetch(url); data = await response.json();
-                if (data.results && data.results.length > 0) return data.results[0]; 
+                response = await fetch(url); 
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data.results && data.results.length > 0) return data.results[0]; 
+                }
+
+                // 💡 3. 기능 개선: NewsData.io 결과가 없을 때 사용할 대체(Fallback) API 로직 추가 (GNews API 활용)
+                const GNEWS_API_KEY = '5f2e0e9803bfdbb091fcf3b85bb12b67'; // 무료 GNews API 임시 키
+                let gnewsUrl = `https://gnews.io/api/v4/top-headlines?country=${countryCode.toLowerCase()}&apikey=${GNEWS_API_KEY}`;
+                response = await fetch(gnewsUrl);
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data.articles && data.articles.length > 0) {
+                        const article = data.articles[0];
+                        return {
+                            title: article.title,
+                            description: article.description,
+                            link: article.url,
+                            source_id: article.source.name
+                        };
+                    }
+                }
+
                 return null;
             } catch (error) { return null; }
         }
 
         function showLoadingModal() {
             const ui = UI_DICT[currentTargetLang];
+            const modal = document.getElementById('news-modal');
+            const overlay = document.getElementById('modal-overlay');
+
             document.getElementById('news-title').innerText = "...";
             document.getElementById('loading-msg').innerText = ui.loading;
             
@@ -377,7 +416,15 @@
             document.getElementById('error-msg').style.display = 'none';
             document.getElementById('modal-content-area').style.display = 'none';
             document.getElementById('news-video').src = "";
-            document.getElementById('news-modal').style.display = 'block';
+            
+            // 모달 표시 (애니메이션 클래스 추가)
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+            // 약간의 딜레이를 주어 브라우저가 display: block을 인식한 후 transition이 동작하게 함
+            setTimeout(() => {
+                modal.classList.add('show');
+                overlay.classList.add('show');
+            }, 10);
         }
 
         function showErrorBox(message) {
@@ -451,10 +498,20 @@
         }
 
         function closeModal() {
-            document.getElementById('news-modal').style.display = 'none';
-            document.getElementById('news-video').src = ""; 
+            const modal = document.getElementById('news-modal');
+            const overlay = document.getElementById('modal-overlay');
+            
+            // 애니메이션 클래스 제거
+            modal.classList.remove('show');
+            overlay.classList.remove('show');
+            
+            // 애니메이션 완료 후 display: none 처리
+            setTimeout(() => {
+                modal.style.display = 'none';
+                overlay.style.display = 'none';
+                document.getElementById('news-video').src = ""; 
+            }, 300); // CSS transition 시간(0.3s)과 동일하게 맞춤
         }
     </script>
-<script src="script.js"></script>
 </body>
 </html>
