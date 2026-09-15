@@ -486,7 +486,7 @@
                     videoIndicator.innerHTML = `${ui.currentVideo} <b>${videoData.channelName}</b>`;
                     videoIndicator.style.background = '#e8f0fe'; videoIndicator.style.color = '#1a73e8';
                 }
-                videoIframe.src = `https://www.youtube-nocookie.com/embed/${videoData.videoId}?autoplay=1&mute=1&cc_load_policy=1&hl=${currentTargetLang}`;
+                videoIframe.src = `https://www.youtube.com/embed/${videoData.videoId}?autoplay=1&mute=1&cc_load_policy=1&hl=${currentTargetLang}`;
                 document.getElementById('video-wrapper').style.display = 'block';
             } else {
                 document.getElementById('video-wrapper').style.display = 'none';

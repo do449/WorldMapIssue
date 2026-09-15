@@ -76,7 +76,7 @@ const localNewsData = {
   "DZ": { countryName: "알제리", youtubeLinks: [{ name: "Echorouk News", url: "https://www.youtube.com/c/EchorouknewsTV" }], textLinks: [{ name: "APS", url: "https://www.aps.dz/en/" }] },
   "GH": { countryName: "가나", youtubeLinks: [{ name: "JoyNews", url: "https://www.youtube.com/c/JoyNews" }], textLinks: [{ name: "Graphic Online", url: "https://www.graphic.com.gh/" }] },
   "ET": { countryName: "에티오피아", youtubeLinks: [{ name: "EBC", url: "https://www.youtube.com/c/ebc" }], textLinks: [{ name: "Fana BC", url: "https://www.fanabc.com/english/" }] },
-  "TZ": { countryName: "탄자니아", 리youtubeLinks: [{ name: "TBC", url: "https://www.youtube.com/c/tbconline" }], textLinks: [{ name: "The Citizen", url: "https://www.thecitizen.co.tz/" }] },
+  "TZ": { countryName: "탄자니아", youtubeLinks: [{ name: "TBC", url: "https://www.youtube.com/c/tbconline" }], textLinks: [{ name: "The Citizen", url: "https://www.thecitizen.co.tz/" }] },
 
   // ============================================================================
   // 🛡️ 2. 설정되지 않은 기타 국가를 위한 기본값 (안전장치)
