@@ -623,11 +623,20 @@
                 if (textNews) {
                     textNews.originalTitle = textNews.title;
                     textNews.originalDescription = textNews.description;
-                    const translationPromises = [translateText(textNews.title, currentTargetLang)];
-                    if (textNews.description) translationPromises.push(translateText(textNews.description, currentTargetLang));
+                    
+                    // URI 길이 제한 방지 및 속도 향상을 위해 번역 전 텍스트 자르기 (UI에서 어차피 130자만 보여줌)
+                    let titleToTranslate = textNews.title || "";
+                    if (titleToTranslate.length > 200) titleToTranslate = titleToTranslate.substring(0, 200) + '...';
+                    
+                    let descToTranslate = textNews.description || "";
+                    if (descToTranslate.length > 250) descToTranslate = descToTranslate.substring(0, 250) + '...';
+
+                    const translationPromises = [translateText(titleToTranslate, currentTargetLang)];
+                    if (descToTranslate) translationPromises.push(translateText(descToTranslate, currentTargetLang));
+                    
                     const translatedResults = await Promise.all(translationPromises);
                     textNews.title = translatedResults[0]; 
-                    if (textNews.description) textNews.description = translatedResults[1]; 
+                    if (descToTranslate) textNews.description = translatedResults[1]; 
                 }
                 
                 newsCache[cacheKey] = { videoData: videoData, textNews: textNews };
