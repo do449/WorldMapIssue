@@ -318,6 +318,8 @@
                         document.getElementById('touch-confirm-msg').innerText = `${hs.name} 지역이 맞나요?`;
                         document.getElementById('touch-confirm-toast').classList.add('show');
                         pendingNewsRequest = { lat: hs.lat, lng: hs.lng, locationInfo: { code: 'N/A', name: hs.name } };
+                        map.flyTo({ center: [hs.lng, hs.lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
+                        return;
                     }
                     map.flyTo({ center: [hs.lng, hs.lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
                     fetchAndShowNews(hs.lat, hs.lng);
