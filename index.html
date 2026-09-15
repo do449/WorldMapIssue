@@ -7,6 +7,8 @@
     
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
     <script src="scripts.js"></script>
     
     <style>
@@ -64,6 +66,21 @@
         #modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; opacity: 0; transition: opacity 0.3s ease; }
         #modal-overlay.show { display: block; opacity: 1; }
 
+        /* 터치 기기용 확인 토스트 팝업 */
+        #touch-confirm-toast {
+            display: none; position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: #fff; padding: 16px 20px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000; width: 90%; max-width: 400px; text-align: center; transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #touch-confirm-toast.show { bottom: 30px; }
+        #touch-confirm-msg { font-weight: 700; color: #202124; margin-bottom: 12px; font-size: 1.1em; }
+        .toast-btns { display: flex; gap: 10px; justify-content: center; }
+        .toast-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .toast-btn.yes { background: #1a73e8; color: white; }
+        .toast-btn.yes:active { background: #1557b0; }
+        .toast-btn.no { background: #f1f3f4; color: #5f6368; }
+        .toast-btn.no:active { background: #e8eaed; }
+
         @media (max-width: 768px) {
             #news-modal { width: 90%; padding: 20px; border-radius: 20px; }
             #ui-controls { top: 10px; right: 10px; font-size: 12px; padding: 8px 12px; }
@@ -85,6 +102,15 @@
 
     <div id="map"></div>
     <div id="hover-tooltip">국가 이름</div>
+
+    <!-- 터치 기기용 국가 확인 창 -->
+    <div id="touch-confirm-toast">
+        <div id="touch-confirm-msg">여기가 맞나요?</div>
+        <div class="toast-btns">
+            <button class="toast-btn yes" onclick="confirmCountry()">네, 맞아요</button>
+            <button class="toast-btn no" onclick="cancelCountry()">아니오</button>
+        </div>
+    </div>
 
     <div id="modal-overlay" onclick="closeModal()"></div>
     <div id="news-modal">
@@ -189,6 +215,22 @@
             center: [126.9780, 37.5665], zoom: 1.5, projection: 'globe' 
         });
 
+        // 💡 국가 및 도시 검색 플러그인 추가 (Geocoding)
+        const geocoder = new MapboxGeocoder({
+            accessToken: mapboxgl.accessToken,
+            mapboxgl: mapboxgl,
+            placeholder: '국가, 도시 검색...'
+        });
+        map.addControl(geocoder, 'top-left');
+
+        geocoder.on('result', function(e) {
+            const lng = e.result.center[0];
+            const lat = e.result.center[1];
+            
+            // 데스크탑/모바일 상관없이 검색 결과 선택 시 바로 뉴스 표시
+            fetchAndShowNews(lat, lng);
+        });
+
         map.on('style.load', () => { map.setFog({ 'color': 'rgb(186, 210, 235)', 'high-color': 'rgb(36, 92, 223)' }); });
         map.on('load', () => {
             map.addSource('countries-source', { 'type': 'geojson', 'data': 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json' });
@@ -273,25 +315,49 @@
             return langMap[countryCode] || 'en'; 
         }
 
+        let pendingNewsRequest = null;
+
         map.on('click', async function(e) {
             let lat = e.lngLat.lat; let lng = e.lngLat.lng;
             
-            // 💡 1. 줌 애니메이션 효과 추가
-            map.flyTo({
-                center: [lng, lat],
-                zoom: 4, 
-                speed: 1.2, 
-                curve: 1.4, 
-                essential: true 
-            });
-
-            fetchAndShowNews(lat, lng);
+            // 모바일/터치 기기 감지 (폴더폰, 태블릿 등 터치 지원 화면 전체)
+            const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+            
+            if (isTouchDevice) {
+                try {
+                    const locationInfo = await getLocationInfo(lat, lng);
+                    if (!locationInfo || !locationInfo.name) return;
+                    
+                    document.getElementById('touch-confirm-msg').innerText = `${locationInfo.name} 지역이 맞나요?`;
+                    document.getElementById('touch-confirm-toast').classList.add('show');
+                    
+                    pendingNewsRequest = { lat: lat, lng: lng, locationInfo: locationInfo };
+                } catch(err) { console.error(err); }
+            } else {
+                // 💡 데스크탑: 줌 애니메이션 효과 추가 후 바로 실행
+                map.flyTo({ center: [lng, lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
+                fetchAndShowNews(lat, lng);
+            }
         });
 
-        async function fetchAndShowNews(lat, lng) {
+        function confirmCountry() {
+            document.getElementById('touch-confirm-toast').classList.remove('show');
+            if (pendingNewsRequest) {
+                map.flyTo({ center: [pendingNewsRequest.lng, pendingNewsRequest.lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
+                fetchAndShowNews(pendingNewsRequest.lat, pendingNewsRequest.lng, pendingNewsRequest.locationInfo);
+                pendingNewsRequest = null;
+            }
+        }
+
+        function cancelCountry() {
+            document.getElementById('touch-confirm-toast').classList.remove('show');
+            pendingNewsRequest = null;
+        }
+
+        async function fetchAndShowNews(lat, lng, preFetchedLocation = null) {
             showLoadingModal();
             try {
-                const locationInfo = await getLocationInfo(lat, lng);
+                const locationInfo = preFetchedLocation || await getLocationInfo(lat, lng);
                 const localLangCode = getCountryLangCode(locationInfo.code);
                 
                 const cacheKey = `${locationInfo.code}_${currentTargetLang}`;
