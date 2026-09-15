@@ -7,6 +7,7 @@
     
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+    <script src="scripts.js"></script>
     
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000; overflow: hidden; }
@@ -239,6 +240,23 @@
         
         // 특정 공식 채널 고정 (블락 체크용)
         const OFFICIAL_CHANNELS = { 'GB': 'UC16niRr50-MSBwiO3YDb3RA', 'US': 'UC6ZFN9Tx6xh-skXCuRHCDpQ', 'JP': 'UCGCZAYq5OEM337424tU1rZA', 'VN': 'UCjHMMtZExQoQhXN2E6613hQ', 'FR': 'UCCQw_O-6gE72ZqD4Rj07pDA', 'DE': 'UCknLrEdhRCp1aegoMqRaCZg' };
+
+        // 💡 scripts.js의 localNewsData를 동적으로 병합하여 60+ 국가 데이터 연동
+        if (typeof localNewsData !== 'undefined') {
+            for (const [code, data] of Object.entries(localNewsData)) {
+                if (code !== 'DEFAULT') {
+                    if (!COUNTRY_RESOURCES[code]) {
+                        COUNTRY_RESOURCES[code] = {
+                            video: data.youtubeLinks.map(l => ({name: l.name, url: l.url})),
+                            text: data.textLinks.map(l => ({name: l.name, url: l.url}))
+                        };
+                    }
+                    if (!PUBLIC_BROADCASTERS[code] && data.youtubeLinks && data.youtubeLinks.length > 0) {
+                        PUBLIC_BROADCASTERS[code] = data.youtubeLinks[0].name;
+                    }
+                }
+            }
+        }
 
         // 💡 3. 기능 개선: 뉴스 검색 쿼리(CUSTOM_QUERIES) 최적화
         const CUSTOM_QUERIES = { 
