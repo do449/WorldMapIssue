@@ -301,14 +301,43 @@
             center: [126.9780, 37.5665], zoom: 1.5, projection: 'globe' 
         });
 
+        let seenCountries = new Set();
+
         // 💡 국가 검색 플러그인 추가 (Geocoding)
         const geocoder = new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,
             mapboxgl: mapboxgl,
-            types: 'country',
-            placeholder: UI_DICT[currentTargetLang].searchPlaceholder
+            types: 'country,place',
+            placeholder: UI_DICT[currentTargetLang].searchPlaceholder,
+            filter: function(item) {
+                let countryCode = null;
+                if (item.place_type.includes('country')) {
+                    countryCode = item.properties.short_code || item.text;
+                } else if (item.context) {
+                    const countryCtx = item.context.find(c => c.id.startsWith('country'));
+                    if (countryCtx) countryCode = countryCtx.short_code || countryCtx.text;
+                }
+                
+                if (!countryCode) return false;
+                if (seenCountries.has(countryCode)) return false;
+                
+                seenCountries.add(countryCode);
+                return true;
+            },
+            render: function(item) {
+                let countryName = item.text;
+                if (!item.place_type.includes('country') && item.context) {
+                    const countryCtx = item.context.find(c => c.id.startsWith('country'));
+                    if (countryCtx) countryName = countryCtx.text;
+                }
+                return `<div class="mapboxgl-ctrl-geocoder--suggestion"><div class="mapboxgl-ctrl-geocoder--suggestion-title" style="font-weight: 700; color: #444;">${countryName}</div></div>`;
+            }
         });
         map.addControl(geocoder, 'top-left');
+
+        geocoder.on('loading', () => {
+            seenCountries.clear();
+        });
 
         let latestGeocoderResults = [];
         geocoder.on('results', function(e) {
@@ -328,6 +357,9 @@
             // Geocoder 인풋에서 Enter 키 입력 시 첫 번째 결과 자동 선택
             const searchInput = document.querySelector('.mapboxgl-ctrl-geocoder--input');
             if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    seenCountries.clear();
+                });
                 searchInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         setTimeout(() => {
