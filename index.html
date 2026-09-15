@@ -67,7 +67,7 @@
         .mapboxgl-ctrl-geocoder--input { font-weight: 700 !important; color: #444 !important; }
 
         /* 4. 카테고리 칩 버튼 */
-        #category-filters { position: absolute; top: 80px; right: 20px; z-index: 10; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
+        #category-filters { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
         .cat-chip { background: #fff; border: 2px solid #e8eaed; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #5f6368; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .cat-chip:hover { border-color: #4285f4; color: #4285f4; }
         .cat-chip.active { background: #4285f4; color: #fff; border-color: #4285f4; }
@@ -120,22 +120,24 @@
 <body>
 
     <div id="ui-controls">
-        <span id="ui-lang-label">🌐 언어:</span> 
-        <select id="lang-selector">
-            <option value="ko">한국어 (Korean)</option>
-            <option value="en">영어 (English)</option>
-            <option value="ja">일본어 (Japanese)</option>
-            <option value="zh-CN">중국어 (Chinese)</option>
-            <option value="es">스페인어 (Spanish)</option>
-        </select>
-    </div>
+        <div style="display: flex; align-items: center; justify-content: flex-end; margin-bottom: 12px;">
+            <span id="ui-lang-label">🌐 언어:</span> 
+            <select id="lang-selector">
+                <option value="ko">한국어 (Korean)</option>
+                <option value="en">영어 (English)</option>
+                <option value="ja">일본어 (Japanese)</option>
+                <option value="zh-CN">중국어 (Chinese)</option>
+                <option value="es">스페인어 (Spanish)</option>
+            </select>
+        </div>
 
-    <!-- 4. 카테고리 필터링 칩 -->
-    <div id="category-filters">
-        <div class="cat-chip active" id="chip-general" onclick="setCategory('general')">🌐 종합</div>
-        <div class="cat-chip" id="chip-sports" onclick="setCategory('sports')">⚽ 스포츠</div>
-        <div class="cat-chip" id="chip-entertainment" onclick="setCategory('entertainment')">🍿 문화</div>
-        <div class="cat-chip" id="chip-technology" onclick="setCategory('technology')">🚀 과학/IT</div>
+        <!-- 4. 카테고리 필터링 칩 -->
+        <div id="category-filters">
+            <div class="cat-chip active" id="chip-general" onclick="setCategory('general')">🌐 종합</div>
+            <div class="cat-chip" id="chip-sports" onclick="setCategory('sports')">⚽ 스포츠</div>
+            <div class="cat-chip" id="chip-entertainment" onclick="setCategory('entertainment')">🍿 문화</div>
+            <div class="cat-chip" id="chip-technology" onclick="setCategory('technology')">🚀 과학/IT</div>
+        </div>
     </div>
 
     <div id="map"></div>
@@ -437,24 +439,21 @@
         map.on('click', async function(e) {
             let lat = e.lngLat.lat; let lng = e.lngLat.lng;
             
-            // 모바일/터치 기기 감지 (폴더폰, 태블릿 등 터치 지원 화면 전체)
-            const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
-            
-            if (isTouchDevice) {
-                try {
-                    const locationInfo = preFetchedLocation || await getLocationInfo(lat, lng);
-                    if (!locationInfo || !locationInfo.name) return;
-                    
+            try {
+                const locationInfo = await getLocationInfo(lat, lng);
+                if (!locationInfo || !locationInfo.name || locationInfo.name === "Unknown Area" || locationInfo.name === "Unknown" || locationInfo.code === "") return;
+                
+                const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+                
+                if (isTouchDevice) {
                     document.getElementById('touch-confirm-msg').innerText = `${locationInfo.name} 지역이 맞나요?`;
                     document.getElementById('touch-confirm-toast').classList.add('show');
-                    
                     pendingNewsRequest = { lat: lat, lng: lng, locationInfo: locationInfo };
-                } catch(err) { console.error(err); }
-            } else {
-                // 💡 데스크탑: 줌 애니메이션 효과 추가 후 바로 실행
-                map.flyTo({ center: [lng, lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
-                fetchAndShowNews(lat, lng);
-            }
+                } else {
+                    map.flyTo({ center: [lng, lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
+                    fetchAndShowNews(lat, lng, locationInfo);
+                }
+            } catch(err) { console.error(err); }
         });
 
         function confirmCountry() {
@@ -516,6 +515,10 @@
             showLoadingModal();
             try {
                 const locationInfo = preFetchedLocation || await getLocationInfo(lat, lng);
+                if (!locationInfo || !locationInfo.name || locationInfo.name === "Unknown Area" || locationInfo.name === "Unknown" || locationInfo.code === "") {
+                    closeModal();
+                    return;
+                }
                 const localLangCode = getCountryLangCode(locationInfo.code);
                 
                 fetchTrivia(locationInfo.code, lat, lng);
