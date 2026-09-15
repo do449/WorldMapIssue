@@ -309,6 +309,11 @@
         });
         map.addControl(geocoder, 'top-left');
 
+        let latestGeocoderResults = [];
+        geocoder.on('results', function(e) {
+            latestGeocoderResults = e.features;
+        });
+
         geocoder.on('result', function(e) {
             const lng = e.result.center[0];
             const lat = e.result.center[1];
@@ -319,6 +324,25 @@
 
         map.on('style.load', () => { map.setFog({ 'color': 'rgb(186, 210, 235)', 'high-color': 'rgb(36, 92, 223)' }); });
         map.on('load', () => {
+            // Geocoder 인풋에서 Enter 키 입력 시 첫 번째 결과 자동 선택
+            const searchInput = document.querySelector('.mapboxgl-ctrl-geocoder--input');
+            if (searchInput) {
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        setTimeout(() => {
+                            const modal = document.getElementById('news-modal');
+                            if (modal.style.display === 'block' || modal.classList.contains('show')) return; // 이미 실행됨
+                            if (latestGeocoderResults && latestGeocoderResults.length > 0) {
+                                const first = latestGeocoderResults[0];
+                                const lng = first.center[0];
+                                const lat = first.center[1];
+                                fetchAndShowNews(lat, lng);
+                            }
+                        }, 200);
+                    }
+                });
+            }
+            
             map.addSource('countries-source', { 'type': 'geojson', 'data': 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json' });
             map.addLayer({ 'id': 'country-fills', 'type': 'fill', 'source': 'countries-source', 'paint': { 'fill-color': 'transparent' } });
             map.addLayer({ 'id': 'country-fills-hover', 'type': 'fill', 'source': 'countries-source', 'paint': { 'fill-color': 'rgba(255, 255, 255, 0.2)' }, 'filter': ['==', 'name', ''] });
