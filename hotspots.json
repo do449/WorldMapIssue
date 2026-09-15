@@ -1,0 +1,20 @@
+[
+  {
+    "name": "미국",
+    "lat": 39.7837304,
+    "lng": -100.445882,
+    "title": "State gas prices increase"
+  },
+  {
+    "name": "방글라데시",
+    "lat": 24.4769288,
+    "lng": 90.2934413,
+    "title": "President seeks more UK support in education, investment, technology | News Flash"
+  },
+  {
+    "name": "뉴질랜드",
+    "lat": -41.5000831,
+    "lng": 172.8344077,
+    "title": "Versos launches NVIDIA NeMo agents for video training"
+  }
+]

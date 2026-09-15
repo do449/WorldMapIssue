@@ -255,7 +255,7 @@
             newsCache = {};
         }
 
-        function updateLanguageUI() {
+        async function updateLanguageUI() {
             const ui = UI_DICT[currentTargetLang];
             document.getElementById('ui-lang-label').innerText = ui.langLabel;
             document.getElementById('chip-general').innerText = ui.catGeneral;
@@ -268,9 +268,24 @@
                 searchInput.placeholder = ui.searchPlaceholder;
             }
             
-            document.querySelectorAll('.hotspot-label').forEach(label => {
-                label.innerText = ui.hotspotLabel;
-            });
+            if (window.hotspotElements) {
+                for (const hs of window.hotspotElements) {
+                    let translatedTitle = hs.title;
+                    if (currentTargetLang !== 'en') {
+                        try {
+                            translatedTitle = await translateText(hs.title, currentTargetLang);
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                    let displayTitle = translatedTitle.length > 25 ? translatedTitle.substring(0, 25) + "..." : translatedTitle;
+                    hs.label.innerText = `🔥 ${ui.hotspotLabel}: ${displayTitle}`;
+                }
+            } else {
+                document.querySelectorAll('.hotspot-label').forEach(label => {
+                    label.innerText = `🔥 ${ui.hotspotLabel}`;
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -380,39 +395,49 @@
             map.addLayer({ 'id': 'country-fills', 'type': 'fill', 'source': 'countries-source', 'paint': { 'fill-color': 'transparent' } });
             map.addLayer({ 'id': 'country-fills-hover', 'type': 'fill', 'source': 'countries-source', 'paint': { 'fill-color': 'rgba(255, 255, 255, 0.2)' }, 'filter': ['==', 'name', ''] });
 
-            // 💡 핫이슈 국가 (샘플 3곳: 한국, 미국, 프랑스)
-            const hotspots = [
-                { lng: 127.7669, lat: 35.9078, name: '한국' },
-                { lng: -95.7129, lat: 37.0902, name: '미국' },
-                { lng: 2.2137, lat: 46.2276, name: '프랑스' }
-            ];
-            
-            hotspots.forEach(hs => {
-                const el = document.createElement('div');
-                el.className = 'hotspot-marker';
-                const label = document.createElement('div');
-                label.className = 'hotspot-label';
-                label.innerText = UI_DICT[currentTargetLang].hotspotLabel;
-                el.appendChild(label);
-                
-                new mapboxgl.Marker(el)
-                    .setLngLat([hs.lng, hs.lat])
-                    .addTo(map);
-                    
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const isTouch = window.matchMedia("(pointer: coarse)").matches;
-                    if (isTouch) {
-                        document.getElementById('touch-confirm-msg').innerText = `${hs.name} 지역이 맞나요?`;
-                        document.getElementById('touch-confirm-toast').classList.add('show');
-                        pendingNewsRequest = { lat: hs.lat, lng: hs.lng, locationInfo: { code: 'N/A', name: hs.name } };
-                        map.flyTo({ center: [hs.lng, hs.lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
-                        return;
+            // 💡 핫이슈 국가 동적 생성 (GitHub Actions를 통해 자동 업데이트됨)
+            fetch('hotspots.json')
+                .then(res => res.json())
+                .then(async data => {
+                    for (const hs of data) {
+                        const el = document.createElement('div');
+                        el.className = 'hotspot-marker';
+                        const label = document.createElement('div');
+                        label.className = 'hotspot-label';
+                        
+                        let translatedTitle = hs.title;
+                        if (currentTargetLang !== 'en') {
+                            try { translatedTitle = await translateText(hs.title, currentTargetLang); } 
+                            catch (e) { console.error('Title translation failed', e); }
+                        }
+                        
+                        let displayTitle = translatedTitle.length > 25 ? translatedTitle.substring(0, 25) + "..." : translatedTitle;
+                        label.innerText = `🔥 ${UI_DICT[currentTargetLang].hotspotLabel}: ${displayTitle}`;
+                        el.appendChild(label);
+                        
+                        new mapboxgl.Marker(el)
+                            .setLngLat([hs.lng, hs.lat])
+                            .addTo(map);
+                            
+                        el.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const isTouch = window.matchMedia("(pointer: coarse)").matches;
+                            if (isTouch) {
+                                document.getElementById('touch-confirm-msg').innerText = `${hs.name} 지역이 맞나요?`;
+                                document.getElementById('touch-confirm-toast').classList.add('show');
+                                pendingNewsRequest = { lat: hs.lat, lng: hs.lng, locationInfo: { code: 'N/A', name: hs.name } };
+                                map.flyTo({ center: [hs.lng, hs.lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
+                                return;
+                            }
+                            map.flyTo({ center: [hs.lng, hs.lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
+                            fetchAndShowNews(hs.lat, hs.lng);
+                        });
+                        
+                        if(!window.hotspotElements) window.hotspotElements = [];
+                        window.hotspotElements.push({ label, title: hs.title });
                     }
-                    map.flyTo({ center: [hs.lng, hs.lat], zoom: 4, speed: 1.2, curve: 1.4, essential: true });
-                    fetchAndShowNews(hs.lat, hs.lng);
-                });
-            });
+                })
+                .catch(err => console.error('Failed to load hotspots', err));
         });
 
         const tooltip = document.getElementById('hover-tooltip');
