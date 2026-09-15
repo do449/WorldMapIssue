@@ -17,10 +17,11 @@
 
         #top-right-container { position: absolute; top: 20px; right: 20px; z-index: 10; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; pointer-events: none; }
         #ui-controls {
+            display: flex; flex-direction: column; gap: 10px;
             background: rgba(255, 255, 255, 0.95); padding: 12px 20px; backdrop-filter: blur(10px); pointer-events: auto;
-            border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: #444; font-weight: 700; font-size: 15px; display: inline-block;
+            border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: #444; font-weight: 700; font-size: 15px; width: 280px; max-width: calc(100vw - 40px);
         }
-        #ui-controls select { margin-left: 10px; padding: 8px 12px; border-radius: 12px; font-weight: 700; border: 2px solid #e8eaed; background: #fff; cursor: pointer; outline: none; transition: all 0.3s; font-size: 14px; }
+        #ui-controls select { padding: 8px 12px; border-radius: 12px; font-weight: 700; border: 2px solid #e8eaed; background: #fff; cursor: pointer; outline: none; transition: all 0.3s; font-size: 14px; flex-grow: 1; margin-left: 10px; }
         #ui-controls select:focus { border-color: #4285f4; box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2); }
 
         #hover-tooltip {
@@ -63,7 +64,7 @@
         #error-msg { display: none; color: #ea4335; font-weight: 800; margin-bottom: 10px; text-align: center; background: #fce8e6; padding: 18px; border-radius: 16px; border: 2px solid #fad2cf; }
         
         /* 💡 검색창 스타일 둥글고 넓게 수정 */
-        .mapboxgl-ctrl-geocoder { min-width: 320px !important; border-radius: 24px !important; box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important; border: 2px solid #e8eaed !important; font-family: 'Nunito', sans-serif !important; }
+        .mapboxgl-ctrl-geocoder { min-width: 100% !important; max-width: 100% !important; width: 100% !important; box-sizing: border-box !important; border-radius: 16px !important; box-shadow: none !important; border: 2px solid #e8eaed !important; font-family: 'Nunito', sans-serif !important; background-color: #f8f9fa !important; }
         .mapboxgl-ctrl-geocoder--input { font-weight: 700 !important; color: #444 !important; }
 
         /* 4. 카테고리 칩 버튼 */
@@ -98,7 +99,7 @@
 
         /* 터치 기기용 확인 토스트 팝업 */
         #touch-confirm-toast {
-            display: none; position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%);
             background: #fff; padding: 16px 20px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             z-index: 1000; width: 90%; max-width: 400px; text-align: center; transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -113,8 +114,9 @@
 
         @media (max-width: 768px) {
             #news-modal { width: 90%; padding: 20px; border-radius: 20px; }
-            #top-right-container { top: 10px; right: 10px; gap: 8px; }
-            #ui-controls { font-size: 12px; padding: 8px 12px; }
+            #top-right-container { top: 10px; left: 10px; right: 10px; gap: 8px; align-items: stretch; }
+            #ui-controls { font-size: 13px; padding: 12px; width: auto; max-width: none; }
+            #category-filters { justify-content: flex-start; max-width: none; }
         }
     </style>
 </head>
@@ -122,14 +124,17 @@
 
     <div id="top-right-container">
         <div id="ui-controls">
-            <span id="ui-lang-label">🌐 언어:</span> 
-            <select id="lang-selector">
-                <option value="ko">한국어 (Korean)</option>
-                <option value="en">영어 (English)</option>
-                <option value="ja">일본어 (Japanese)</option>
-                <option value="zh-CN">중국어 (Chinese)</option>
-                <option value="es">스페인어 (Spanish)</option>
-            </select>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <span id="ui-lang-label">🌐 언어:</span> 
+                <select id="lang-selector">
+                    <option value="ko">한국어 (Korean)</option>
+                    <option value="en">영어 (English)</option>
+                    <option value="ja">일본어 (Japanese)</option>
+                    <option value="zh-CN">중국어 (Chinese)</option>
+                    <option value="es">스페인어 (Spanish)</option>
+                </select>
+            </div>
+            <!-- Geocoder will be appended here as a new block due to flex-direction: column in CSS -->
         </div>
 
         <!-- 4. 카테고리 필터링 칩 -->
@@ -348,7 +353,7 @@
                 return `<div class="mapboxgl-ctrl-geocoder--suggestion"><div class="mapboxgl-ctrl-geocoder--suggestion-title" style="font-weight: 700; color: #444;">${countryName}</div></div>`;
             }
         });
-        map.addControl(geocoder, 'top-left');
+        document.getElementById('ui-controls').appendChild(geocoder.onAdd(map));
 
         geocoder.on('loading', () => {
             seenCountries.clear();
@@ -651,9 +656,27 @@
             if (!text) return "";
             try {
                 const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-                const response = await fetch(url); const data = await response.json();
-                return data[0].map(item => item[0]).join("");
-            } catch (error) { return text; }
+                const response = await fetch(url); 
+                const data = await response.json();
+                if (data && data[0]) {
+                    return data[0].map(item => item[0]).filter(Boolean).join("");
+                }
+                throw new Error("Invalid Google Translate response");
+            } catch (error) { 
+                console.error("Google Translate failed, trying fallback:", error);
+                try {
+                    // Fallback to dict-chrome-ex endpoint
+                    const fallbackUrl = `https://translate.googleapis.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=${targetLang}&q=${encodeURIComponent(text)}`;
+                    const res = await fetch(fallbackUrl);
+                    const fallbackData = await res.json();
+                    if (fallbackData && fallbackData[0] && fallbackData[0][0]) {
+                        return fallbackData[0][0];
+                    }
+                } catch (fallbackError) {
+                    console.error("Fallback translation also failed:", fallbackError);
+                }
+                return text; 
+            }
         }
 
         async function getLocationInfo(lat, lng) {
