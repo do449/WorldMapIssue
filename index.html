@@ -132,10 +132,10 @@
 
     <!-- 4. 카테고리 필터링 칩 -->
     <div id="category-filters">
-        <div class="cat-chip active" onclick="setCategory('general')">🌐 종합</div>
-        <div class="cat-chip" onclick="setCategory('sports')">⚽ 스포츠</div>
-        <div class="cat-chip" onclick="setCategory('entertainment')">🍿 문화</div>
-        <div class="cat-chip" onclick="setCategory('technology')">🚀 과학/IT</div>
+        <div class="cat-chip active" id="chip-general" onclick="setCategory('general')">🌐 종합</div>
+        <div class="cat-chip" id="chip-sports" onclick="setCategory('sports')">⚽ 스포츠</div>
+        <div class="cat-chip" id="chip-entertainment" onclick="setCategory('entertainment')">🍿 문화</div>
+        <div class="cat-chip" id="chip-technology" onclick="setCategory('technology')">🚀 과학/IT</div>
     </div>
 
     <div id="map"></div>
@@ -197,35 +197,45 @@
                 videoTitle: '📺 해당 국가 주요 공영/공식 방송국 유튜브 채널', textTitle: '📰 해당 국가 주요 공영/공식 언론사 홈페이지',
                 currentVideo: '📺 지금 보고 있는 뉴스: ', blockedVideo: '⚠️ 차단된 영상 대신 가져왔어요! ➔ 현재 시청 중: ', noVideo: '⚠️ 지금은 이 나라의 영상 뉴스를 찾지 못했어요.',
                 currentText: '📰 지금 읽고 있는 기사: ', noText: '지금은 이 나라의 글 뉴스를 찾지 못했어요.',
-                readMore: '기사 원문 읽기 ➔', defaultDesc: '기사 원문 링크를 눌러서 자세한 내용을 확인해 보세요!', translated: '자동 번역됨'
+                readMore: '기사 원문 읽기 ➔', defaultDesc: '기사 원문 링크를 눌러서 자세한 내용을 확인해 보세요!', translated: '자동 번역됨',
+                searchPlaceholder: '어느 나라의 뉴스가 궁금한가요? (예: 파리, 영국)',
+                catGeneral: '🌐 종합', catSports: '⚽ 스포츠', catEntertainment: '🍿 문화', catTechnology: '🚀 과학/IT', hotspotLabel: '🔥 오늘의 핫이슈'
             },
             'en': {
                 langLabel: '🌐 Language:', loading: '🌍 Analyzing and translating local channels...', error: 'An error occurred while fetching data.',
                 videoTitle: '📺 Major Public/Official Broadcasting YouTube Channels', textTitle: '📰 Major Public/Official Media Homepages',
                 currentVideo: '📺 Currently watching: ', blockedVideo: '⚠️ Alternative provided due to policy block ➔ Watching: ', noVideo: '⚠️ Cannot load video for this region currently.',
                 currentText: '📰 Current article source: ', noText: 'Cannot load main text articles for this region currently.',
-                readMore: 'Read original article ➔', defaultDesc: 'Please check the original link for detailed news content.', translated: 'Auto-translated'
+                readMore: 'Read original article ➔', defaultDesc: 'Please check the original link for detailed news content.', translated: 'Auto-translated',
+                searchPlaceholder: 'Search for a country or city...',
+                catGeneral: '🌐 General', catSports: '⚽ Sports', catEntertainment: '🍿 Culture', catTechnology: '🚀 Science/IT', hotspotLabel: '🔥 Hot Issue'
             },
             'ja': {
                 langLabel: '🌐 言語:', loading: '🌍 現地のチャンネルを分析・翻訳しています...', error: 'データの取得中にエラーが発生しました。',
                 videoTitle: '📺 該当国の主要な公共/公式放送局のYouTubeチャンネル', textTitle: '📰 該当国の主要な公共/公式メディアのホームページ',
                 currentVideo: '📺 現在視聴中: ', blockedVideo: '⚠️ ポリシー制限による代替提供 ➔ 視聴中: ', noVideo: '⚠️ 現在、この地域の動画を読み込めません。',
                 currentText: '📰 現在の記事のソース: ', noText: '現在、この地域の主要なテキスト記事を読み込めません。',
-                readMore: '記事の原文を読む ➔', defaultDesc: '詳細なニュース内容は原文リンクからご確認ください。', translated: '自動翻訳済み'
+                readMore: '記事の原文を読む ➔', defaultDesc: '詳細なニュース内容は原文リンクからご確認ください。', translated: '自動翻訳済み',
+                searchPlaceholder: '国や都市を検索してください...',
+                catGeneral: '🌐 総合', catSports: '⚽ スポーツ', catEntertainment: '🍿 文化', catTechnology: '🚀 科学/IT', hotspotLabel: '🔥 今日のホットイシュー'
             },
             'zh-CN': {
                 langLabel: '🌐 语言:', loading: '🌍 正在分析和翻译本地频道...', error: '获取数据时发生错误。',
                 videoTitle: '📺 该国主要公共/官方广播YouTube频道', textTitle: '📰 该国主要公共/官方媒体主页',
                 currentVideo: '📺 当前观看：', blockedVideo: '⚠️ 因政策屏蔽提供替代 ➔ 当前观看：', noVideo: '⚠️ 目前无法加载该地区的视频。',
                 currentText: '📰 当前文章来源：', noText: '目前无法加载该地区的主要文本新闻。',
-                readMore: '阅读原文 ➔', defaultDesc: '请通过原文链接查看详细新闻内容。', translated: '自动翻译'
+                readMore: '阅读原文 ➔', defaultDesc: '请通过原文链接查看详细新闻内容。', translated: '自动翻译',
+                searchPlaceholder: '搜索国家或城市...',
+                catGeneral: '🌐 综合', catSports: '⚽ 体育', catEntertainment: '🍿 文化', catTechnology: '🚀 科技/IT', hotspotLabel: '🔥 今日热点'
             },
             'es': {
                 langLabel: '🌐 Idioma:', loading: '🌍 Analizando y traduciendo canales locales...', error: 'Ocurrió un error al obtener los datos.',
                 videoTitle: '📺 Canales de YouTube de radiodifusión pública/oficial principal', textTitle: '📰 Páginas web de los principales medios públicos/oficiales',
                 currentVideo: '📺 Viendo actualmente: ', blockedVideo: '⚠️ Alternativa por bloqueo de política ➔ Viendo: ', noVideo: '⚠️ No se puede cargar el video de esta región.',
                 currentText: '📰 Fuente del artículo actual: ', noText: 'No se pueden cargar los artículos de texto para esta región.',
-                readMore: 'Leer artículo original ➔', defaultDesc: 'Consulte el enlace original para obtener noticias detalladas.', translated: 'Traducido automáticamente'
+                readMore: 'Leer artículo original ➔', defaultDesc: 'Consulte el enlace original para obtener noticias detalladas.', translated: 'Traducido automáticamente',
+                searchPlaceholder: 'Buscar un país o ciudad...',
+                catGeneral: '🌐 General', catSports: '⚽ Deportes', catEntertainment: '🍿 Cultura', catTechnology: '🚀 Ciencia/TI', hotspotLabel: '🔥 Temas de actualidad'
             }
         };
 
@@ -242,6 +252,24 @@
             newsCache = {};
         }
 
+        function updateLanguageUI() {
+            const ui = UI_DICT[currentTargetLang];
+            document.getElementById('ui-lang-label').innerText = ui.langLabel;
+            document.getElementById('chip-general').innerText = ui.catGeneral;
+            document.getElementById('chip-sports').innerText = ui.catSports;
+            document.getElementById('chip-entertainment').innerText = ui.catEntertainment;
+            document.getElementById('chip-technology').innerText = ui.catTechnology;
+            
+            const searchInput = document.querySelector('.mapboxgl-ctrl-geocoder--input');
+            if (searchInput) {
+                searchInput.placeholder = ui.searchPlaceholder;
+            }
+            
+            document.querySelectorAll('.hotspot-label').forEach(label => {
+                label.innerText = ui.hotspotLabel;
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const userLang = navigator.language || navigator.userLanguage; 
             const shortLang = userLang.split('-')[0]; 
@@ -256,12 +284,12 @@
             }
             
             document.getElementById('lang-selector').value = currentTargetLang;
-            document.getElementById('ui-lang-label').innerText = UI_DICT[currentTargetLang].langLabel;
+            updateLanguageUI();
         });
 
         document.getElementById('lang-selector').addEventListener('change', (e) => {
             currentTargetLang = e.target.value;
-            document.getElementById('ui-lang-label').innerText = UI_DICT[currentTargetLang].langLabel;
+            updateLanguageUI();
             newsCache = {}; 
         });
 
@@ -274,7 +302,7 @@
         const geocoder = new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,
             mapboxgl: mapboxgl,
-            placeholder: '어느 나라의 뉴스가 궁금한가요? (예: 파리, 영국)'
+            placeholder: UI_DICT[currentTargetLang].searchPlaceholder
         });
         map.addControl(geocoder, 'top-left');
 
@@ -304,7 +332,7 @@
                 el.className = 'hotspot-marker';
                 const label = document.createElement('div');
                 label.className = 'hotspot-label';
-                label.innerText = '🔥 오늘의 핫이슈';
+                label.innerText = UI_DICT[currentTargetLang].hotspotLabel;
                 el.appendChild(label);
                 
                 new mapboxgl.Marker(el)
