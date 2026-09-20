@@ -1,20 +1,20 @@
 [
   {
-    "name": "미국",
-    "lat": 39.7837304,
-    "lng": -100.445882,
-    "title": "The fall of once-mighty McClatchy newspapers underscores California's news crisis"
-  },
-  {
-    "name": "일본",
-    "lat": 36.5748441,
-    "lng": 139.2394179,
-    "title": "Trump says he will appoint a new AI adviser, without providing details"
-  },
-  {
     "name": "인도",
     "lat": 22.3511148,
     "lng": 78.6677428,
-    "title": "BJP launches anti-drug campaign amid Punjab political clash"
+    "title": "Varanasi holds awareness drive for International Snakebite Awareness Day"
+  },
+  {
+    "name": "미국",
+    "lat": 39.7837304,
+    "lng": -100.445882,
+    "title": "Birmingham alumni born in 1963 reflect on civil rights legacy"
+  },
+  {
+    "name": "캄보디아",
+    "lat": 12.5433216,
+    "lng": 104.8144914,
+    "title": "7 arrested during illegal gambling raid in Kampong Speu"
   }
 ]
