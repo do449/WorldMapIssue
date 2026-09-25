@@ -162,7 +162,7 @@ function setupCountryCommunityUI() {
 
     submitBtn.addEventListener('click', submitComment);
     textInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') submitComment();
+        if (e.key === 'Enter' && !e.isComposing) submitComment();
     });
 
     // Load saved nick
@@ -185,11 +185,11 @@ function setupGlobalLounge() {
     panel.id = 'global-lounge-panel';
     panel.innerHTML = `
         <div class="gl-header">
-            <h4>🌐 글로벌 라운지</h4>
+            <h4 id="gl-title">🌐 글로벌 라운지</h4>
             <button id="gl-close-btn">✖</button>
         </div>
         <div class="gl-body" id="global-chat-list">
-            <div class="comm-loading">데이터를 불러오는 중...</div>
+            <div class="comm-loading" id="gl-loading">데이터를 불러오는 중...</div>
         </div>
         <div class="gl-footer comm-input-group">
             <input type="text" id="gl-nick" class="comm-input-nick" placeholder="닉네임" maxlength="10">
@@ -217,7 +217,7 @@ function setupGlobalLounge() {
                 const listEl = document.getElementById('global-chat-list');
                 listEl.innerHTML = '';
                 if (snapshot.empty) {
-                    listEl.innerHTML = `<div class="comm-empty">첫 번째 메시지를 남겨보세요!</div>`;
+                    listEl.innerHTML = `<div class="comm-empty" id="gl-empty">첫 번째 메시지를 남겨보세요!</div>`;
                     return;
                 }
                 
@@ -247,7 +247,7 @@ function setupGlobalLounge() {
     const textInput = document.getElementById('gl-text');
 
     const submitMsg = async () => {
-        const nick = nickInput.value.trim() || '익명';
+        const nick = nickInput.value.trim() || (COMM_UI_DICT[window.currentCommunityLang]?.anon || '익명');
         const text = textInput.value.trim();
         if (!text) return;
         
@@ -266,6 +266,99 @@ function setupGlobalLounge() {
 
     submitBtn.addEventListener('click', submitMsg);
     textInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') submitMsg();
+        if (e.key === 'Enter' && !e.isComposing) submitMsg();
     });
 }
+
+// -----------------------------------------------------
+// I18N Support
+// -----------------------------------------------------
+window.currentCommunityLang = 'ko';
+const COMM_UI_DICT = {
+    'ko': {
+        countryTitle: '지금 이 나라의 분위기는?',
+        countryListTitle: '실시간 한줄톡',
+        nickPlaceholder: '닉네임',
+        countryTextPlaceholder: '이 나라에 대한 생각을 남겨주세요!',
+        sendBtn: '전송',
+        loungeBtn: '🌐 라운지',
+        loungeTitle: '🌐 글로벌 라운지',
+        loungeTextPlaceholder: '채팅을 입력하세요...',
+        anon: '익명'
+    },
+    'en': {
+        countryTitle: 'What is the mood here?',
+        countryListTitle: 'Live One-liners',
+        nickPlaceholder: 'Nick',
+        countryTextPlaceholder: 'Leave a thought about this country!',
+        sendBtn: 'Send',
+        loungeBtn: '🌐 Lounge',
+        loungeTitle: '🌐 Global Lounge',
+        loungeTextPlaceholder: 'Type a message...',
+        anon: 'Anon'
+    },
+    'ja': {
+        countryTitle: 'この国の今の雰囲気は？',
+        countryListTitle: 'リアルタイムの一言',
+        nickPlaceholder: 'ニック',
+        countryTextPlaceholder: 'この国についての考えを残してください！',
+        sendBtn: '送信',
+        loungeBtn: '🌐 ラウンジ',
+        loungeTitle: '🌐 グローバルラウンジ',
+        loungeTextPlaceholder: 'チャットを入力...',
+        anon: '匿名'
+    },
+    'zh-CN': {
+        countryTitle: '这个国家现在的气氛如何？',
+        countryListTitle: '实时简评',
+        nickPlaceholder: '昵称',
+        countryTextPlaceholder: '留下你对这个国家的看法！',
+        sendBtn: '发送',
+        loungeBtn: '🌐 休息室',
+        loungeTitle: '🌐 全球休息室',
+        loungeTextPlaceholder: '输入聊天内容...',
+        anon: '匿名'
+    },
+    'es': {
+        countryTitle: '¿Cuál es el ambiente aquí?',
+        countryListTitle: 'Comentarios en vivo',
+        nickPlaceholder: 'Apodo',
+        countryTextPlaceholder: '¡Deja un pensamiento sobre este país!',
+        sendBtn: 'Enviar',
+        loungeBtn: '🌐 Sala',
+        loungeTitle: '🌐 Sala Global',
+        loungeTextPlaceholder: 'Escribe un mensaje...',
+        anon: 'Anónimo'
+    }
+};
+
+export function updateCommunityLanguage(lang) {
+    window.currentCommunityLang = lang;
+    const ui = COMM_UI_DICT[lang] || COMM_UI_DICT['ko'];
+    
+    // Country UI
+    const commTitle1 = document.querySelector('.comm-header .comm-title');
+    if (commTitle1) commTitle1.innerText = ui.countryTitle;
+    const commTitle2 = document.querySelector('.comm-chat-area .comm-title');
+    if (commTitle2) commTitle2.innerText = ui.countryListTitle;
+    const countryNick = document.getElementById('country-nick');
+    if (countryNick) countryNick.placeholder = ui.nickPlaceholder;
+    const countryText = document.getElementById('country-text');
+    if (countryText) countryText.placeholder = ui.countryTextPlaceholder;
+    const countrySubmit = document.getElementById('country-submit');
+    if (countrySubmit) countrySubmit.innerText = ui.sendBtn;
+
+    // Lounge UI
+    const loungeBtn = document.getElementById('global-lounge-btn');
+    if (loungeBtn) loungeBtn.innerHTML = ui.loungeBtn;
+    const loungeTitle = document.getElementById('gl-title');
+    if (loungeTitle) loungeTitle.innerHTML = ui.loungeTitle;
+    const glNick = document.getElementById('gl-nick');
+    if (glNick) glNick.placeholder = ui.nickPlaceholder;
+    const glText = document.getElementById('gl-text');
+    if (glText) glText.placeholder = ui.loungeTextPlaceholder;
+    const glSubmit = document.getElementById('gl-submit');
+    if (glSubmit) glSubmit.innerText = ui.sendBtn;
+}
+
+window.updateCommunityLanguage = updateCommunityLanguage;

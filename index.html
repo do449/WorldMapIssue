@@ -140,20 +140,20 @@
         .comm-empty, .comm-loading, .comm-error { text-align: center; color: #80868b; font-size: 13px; margin-top: 60px; }
 
         #global-lounge-btn {
-            position: fixed; bottom: 30px; right: 30px; background: #ea4335; color: white; padding: 14px 24px; border-radius: 30px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(234, 67, 53, 0.4); z-index: 900; transition: transform 0.2s;
+            position: fixed; bottom: 30px; right: 30px; background: #3c4043; color: white; padding: 14px 24px; border-radius: 30px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); z-index: 900; transition: transform 0.2s;
         }
         #global-lounge-btn:hover { transform: scale(1.05); }
         #global-lounge-panel {
             position: fixed; bottom: -500px; right: 30px; width: 350px; height: 450px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; display: flex; flex-direction: column; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         #global-lounge-panel.show { bottom: 30px; }
-        .gl-header { background: #ea4335; color: white; padding: 15px 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
+        .gl-header { background: #3c4043; color: white; padding: 15px 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
         .gl-header h4 { margin: 0; font-size: 16px; }
         #gl-close-btn { background: transparent; border: none; color: white; font-size: 18px; cursor: pointer; font-weight: bold; }
         .gl-body { flex: 1; padding: 15px; overflow-y: auto; background: #f8f9fa; }
         .gl-footer { padding: 15px; background: white; border-top: 1px solid #e8eaed; border-radius: 0 0 20px 20px; }
         .gl-msg { margin-bottom: 12px; background: white; padding: 10px 12px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .gl-msg-nick { font-weight: 800; color: #ea4335; font-size: 13px; display: block; margin-bottom: 4px; }
+        .gl-msg-nick { font-weight: 800; color: #1a73e8; font-size: 13px; display: block; margin-bottom: 4px; }
         .gl-msg-text { font-size: 14px; color: #3c4043; line-height: 1.4; }
         .gl-msg-time { font-size: 11px; color: #bdc1c6; float: right; margin-top: 2px; }
         
@@ -333,6 +333,9 @@
                 document.querySelectorAll('.hotspot-label').forEach(label => {
                     label.innerText = `🔥 ${ui.hotspotLabel}`;
                 });
+            }
+            if (window.updateCommunityLanguage) {
+                window.updateCommunityLanguage(currentTargetLang);
             }
         }
 
