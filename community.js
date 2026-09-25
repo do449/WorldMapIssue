@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
-    getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, increment, getDoc, setDoc
+    getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, doc, updateDoc, increment, getDoc, setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -57,7 +57,7 @@ export function openCountryCommunity(countryCode, countryName) {
 
     // 3. Subscribe to Real-time Comments
     const commentsRef = collection(db, `countries/${countryCode}/comments`);
-    const q = query(commentsRef, orderBy("createdAt", "desc"));
+    const q = query(commentsRef, orderBy("createdAt", "desc"), limit(50));
     
     unsubscribeCountryComments = onSnapshot(q, (snapshot) => {
         const listEl = document.getElementById('country-comment-list');
@@ -222,7 +222,7 @@ function setupGlobalLounge() {
         if (!unsubscribeGlobalComments) {
             const commentsRef = collection(db, `global_lounge`);
             // limit to 50 latest
-            const q = query(commentsRef, orderBy("createdAt", "desc"));
+            const q = query(commentsRef, orderBy("createdAt", "desc"), limit(50));
             unsubscribeGlobalComments = onSnapshot(q, (snapshot) => {
                 const listEl = document.getElementById('global-chat-list');
                 listEl.innerHTML = '';
