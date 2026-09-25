@@ -139,30 +139,40 @@ function setupCountryCommunityUI() {
     const nickInput = document.getElementById('country-nick');
     const textInput = document.getElementById('country-text');
 
+    let isSubmittingComment = false;
     const submitComment = async () => {
-        if (!currentCountryCode) return;
-        const nick = nickInput.value.trim() || '익명';
+        if (isSubmittingComment) return;
+        
+        // Get text immediately, but delay clearing to avoid IME leftover bug
         const text = textInput.value.trim();
         if (!text) return;
         
-        textInput.value = '';
+        isSubmittingComment = true;
+        setTimeout(() => { textInput.value = ''; }, 10);
+        
+        const nick = nickInput.value.trim() || (COMM_UI_DICT[window.currentCommunityLang]?.anon || '익명');
         try {
             await addDoc(collection(db, `countries/${currentCountryCode}/comments`), {
                 nick: nick,
                 text: text,
                 createdAt: serverTimestamp()
             });
-            // Save nick to localstorage for convenience
             localStorage.setItem('wmi_nick', nick);
         } catch (e) {
             console.error("Comment error", e);
             alert("댓글 등록에 실패했습니다.");
+        } finally {
+            isSubmittingComment = false;
         }
     };
 
     submitBtn.addEventListener('click', submitComment);
     textInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.isComposing) submitComment();
+        if (e.key === 'Enter') {
+            if (e.isComposing) return;
+            e.preventDefault();
+            submitComment();
+        }
     });
 
     // Load saved nick
@@ -246,12 +256,17 @@ function setupGlobalLounge() {
     const nickInput = document.getElementById('gl-nick');
     const textInput = document.getElementById('gl-text');
 
+    let isSubmittingGl = false;
     const submitMsg = async () => {
-        const nick = nickInput.value.trim() || (COMM_UI_DICT[window.currentCommunityLang]?.anon || '익명');
+        if (isSubmittingGl) return;
+        
         const text = textInput.value.trim();
         if (!text) return;
         
-        textInput.value = '';
+        isSubmittingGl = true;
+        setTimeout(() => { textInput.value = ''; }, 10);
+        
+        const nick = nickInput.value.trim() || (COMM_UI_DICT[window.currentCommunityLang]?.anon || '익명');
         try {
             await addDoc(collection(db, `global_lounge`), {
                 nick: nick,
@@ -261,12 +276,18 @@ function setupGlobalLounge() {
             localStorage.setItem('wmi_nick', nick);
         } catch (e) {
             console.error("Global Chat error", e);
+        } finally {
+            isSubmittingGl = false;
         }
     };
 
     submitBtn.addEventListener('click', submitMsg);
     textInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.isComposing) submitMsg();
+        if (e.key === 'Enter') {
+            if (e.isComposing) return;
+            e.preventDefault();
+            submitMsg();
+        }
     });
 }
 
