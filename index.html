@@ -537,6 +537,9 @@
         // 특정 공식 채널 고정 (블락 체크용)
         const OFFICIAL_CHANNELS = { 'GB': 'UC16niRr50-MSBwiO3YDb3RA', 'US': 'UC6ZFN9Tx6xh-skXCuRHCDpQ', 'JP': 'UCGCZAYq5OEM337424tU1rZA', 'VN': 'UCjHMMtZExQoQhXN2E6613hQ', 'FR': 'UCCQw_O-6gE72ZqD4Rj07pDA', 'DE': 'UCknLrEdhRCp1aegoMqRaCZg' };
 
+        // 💡 자국 내 독립 언론/접근성이 극히 제한된 특수 국가 목록
+        const ISOLATED_COUNTRIES = ['KP', 'ER', 'TM', 'EH', 'AQ'];
+
         // 💡 scripts.js의 localNewsData를 동적으로 병합하여 60+ 국가 데이터 연동
         if (typeof localNewsData !== 'undefined') {
             for (const [code, data] of Object.entries(localNewsData)) {
@@ -757,6 +760,22 @@
                 let regionParam = `&regionCode=${countryCode}`;
                 let langParam = `&relevanceLanguage=${localLang}`;
 
+                // 💡 특수 격리 국가(북한 등)인 경우 현지 언론/공식 채널이 없으므로 곧바로 글로벌 검색(2차 폴백)으로 직행
+                if (ISOLATED_COUNTRIES.includes(countryCode)) {
+                    let globalQuery = `${countryName} News`;
+                    let queryUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(globalQuery)}&type=video&videoEmbeddable=true&videoCategoryId=${videoCategoryId}&order=relevance&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                    let response = await fetch(queryUrl);
+                    let data = await response.json();
+    
+                    if (data.items && data.items.length > 0) {
+                        result.type = 'globalFallback'; 
+                        result.videoId = data.items[0].id.videoId;
+                        result.channelName = data.items[0].snippet.channelTitle; 
+                        return result;
+                    }
+                    return result;
+                }
+
                 if (OFFICIAL_CHANNELS[countryCode] && currentCategory === 'general') {
                     const channelId = OFFICIAL_CHANNELS[countryCode];
                     let embedUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&order=date&channelId=${channelId}&maxResults=1&key=${YOUTUBE_API_KEY}`;
@@ -783,14 +802,14 @@
                     return result;
                 }
 
-                // 💡 2차 폴백: 국가 코드로 영상이 검색되지 않는 폐쇄 국가(북한 등)인 경우 글로벌 검색으로 전환
+                // 💡 2차 폴백: API 문제로 지역 검색이 안 될 때 (일반 국가용)
                 let globalQuery = `${countryName} News`;
                 queryUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(globalQuery)}&type=video&videoEmbeddable=true&videoCategoryId=${videoCategoryId}&order=relevance&maxResults=1&key=${YOUTUBE_API_KEY}`;
                 response = await fetch(queryUrl);
                 data = await response.json();
 
                 if (data.items && data.items.length > 0) {
-                    result.type = 'globalFallback'; // 알림 배너를 띄우기 위한 특수 타입
+                    result.type = 'globalFallback';
                     result.videoId = data.items[0].id.videoId;
                     result.channelName = data.items[0].snippet.channelTitle; 
                     return result;
@@ -809,8 +828,17 @@
             if (currentCategory === 'technology') categoryParam = '&category=technology';
 
             try {
-                let countryParam = `&country=${countryCode.toLowerCase()}`;
+                if (ISOLATED_COUNTRIES.includes(countryCode)) {
+                    let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=${encodeURIComponent(localCountryName)}+News`;
+                    let response = await fetch(url);
+                    if (response.ok) {
+                        let data = await response.json();
+                        if (data.results && data.results.length > 0) return { data: data.results[0], isFallback: true };
+                    }
+                    return null;
+                }
 
+                let countryParam = `&country=${countryCode.toLowerCase()}`;
                 let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}${countryParam}&q=${encodeURIComponent(localCountryName)}${categoryParam}`;
                 let response = await fetch(url);
                 
