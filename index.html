@@ -747,9 +747,15 @@
 
             try {
                 const localLang = getCountryLangCode(countryCode);
-                const strictQuery = (CUSTOM_QUERIES[countryCode] || `${searchKeyword} ${countryName} official news`) + extraQuery + " -vlog -music";
-                const regionParam = `&regionCode=${countryCode}`;
-                const langParam = `&relevanceLanguage=${localLang}`;
+                let strictQuery = (CUSTOM_QUERIES[countryCode] || `${searchKeyword} ${countryName} official news`) + extraQuery + " -vlog -music";
+                let regionParam = `&regionCode=${countryCode}`;
+                let langParam = `&relevanceLanguage=${localLang}`;
+
+                // 북한 예외 처리: 지역 제한을 풀고 글로벌에서 검색
+                if (countryCode === 'KP') {
+                    regionParam = ''; 
+                    strictQuery = `North Korea News ${countryName}`;
+                }
 
                 if (OFFICIAL_CHANNELS[countryCode] && currentCategory === 'general') {
                     const channelId = OFFICIAL_CHANNELS[countryCode];
@@ -789,7 +795,11 @@
             if (currentCategory === 'technology') categoryParam = '&category=technology';
 
             try {
-                let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${countryCode.toLowerCase()}&q=${encodeURIComponent(localCountryName)}${categoryParam}`;
+                // 북한(KP) 등 자국 내 독립 언론이 없어 API에 등록되지 않은 특수 국가 예외 처리
+                let countryParam = `&country=${countryCode.toLowerCase()}`;
+                if (countryCode === 'KP') countryParam = ''; // 글로벌 검색으로 전환
+
+                let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}${countryParam}&q=${encodeURIComponent(localCountryName)}${categoryParam}`;
                 let response = await fetch(url);
                 
                 if (response.ok) {
@@ -797,8 +807,13 @@
                     if (data.results && data.results.length > 0) return data.results[0]; 
                 }
                 
-                // 검색어 없이 국가 코드로만 1차 폴백
-                url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&country=${countryCode.toLowerCase()}`;
+                // 검색어 없이 국가 코드로만 1차 폴백 (KP는 countryParam이 비어있으므로 q파라미터를 기본 국가명으로 대체)
+                if (countryCode === 'KP') {
+                    url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=North%20Korea`;
+                } else {
+                    url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}${countryParam}`;
+                }
+                
                 response = await fetch(url); 
                 if (response.ok) {
                     let data = await response.json();
