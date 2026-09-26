@@ -205,6 +205,7 @@
     <div id="news-modal">
         <span class="close-btn" onclick="closeModal()">✖</span>
         <h3 id="news-title">지역 뉴스</h3>
+        <div id="news-fallback-notice" style="display: none; background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 13px;"></div>
         
         <p id="loading-msg">🌍 현지 방송국 및 언론사의 최신 뉴스를 분석하고 번역 중입니다. 잠시만 기다려주세요...</p>
         <p id="error-msg"></p>
@@ -250,7 +251,7 @@
                 currentText: '📰 지금 읽고 있는 기사: ', noText: '지금은 이 나라의 글 뉴스를 찾지 못했어요.',
                 readMore: '기사 원문 읽기 ➔', defaultDesc: '기사 원문 링크를 눌러서 자세한 내용을 확인해 보세요!', translated: '자동 번역됨',
                 searchPlaceholder: '어느 나라의 뉴스가 궁금한가요? (예: 프랑스, 영국)',
-                catGeneral: '🌐 종합', catSports: '⚽ 스포츠', catEntertainment: '🍿 문화', catTechnology: '🚀 과학/IT', hotspotLabel: '🔥 오늘의 핫이슈'
+                catGeneral: '🌐 종합', catSports: '⚽ 스포츠', catEntertainment: '🍿 문화', catTechnology: '🚀 과학/IT', hotspotLabel: '🔥 오늘의 핫이슈', fallbackNotice: '💡 현지 언론 데이터를 찾을 수 없어, 전 세계 주요 언론이 보도한 관련 뉴스로 대체합니다.'
             },
             'en': {
                 langLabel: '🌐 Language:', loading: '🌍 Analyzing and translating local channels...', error: 'An error occurred while fetching data.',
@@ -259,7 +260,7 @@
                 currentText: '📰 Current article source: ', noText: 'Cannot load main text articles for this region currently.',
                 readMore: 'Read original article ➔', defaultDesc: 'Please check the original link for detailed news content.', translated: 'Auto-translated',
                 searchPlaceholder: 'Search for a country...',
-                catGeneral: '🌐 General', catSports: '⚽ Sports', catEntertainment: '🍿 Culture', catTechnology: '🚀 Science/IT', hotspotLabel: '🔥 Hot Issue'
+                catGeneral: '🌐 General', catSports: '⚽ Sports', catEntertainment: '🍿 Culture', catTechnology: '🚀 Science/IT', hotspotLabel: '🔥 Hot Issue', fallbackNotice: '💡 Local media data not found. Showing relevant news from global media instead.'
             },
             'ja': {
                 langLabel: '🌐 言語:', loading: '🌍 現地のチャンネルを分析・翻訳しています...', error: 'データの取得中にエラーが発生しました。',
@@ -268,7 +269,7 @@
                 currentText: '📰 現在の記事のソース: ', noText: '現在、この地域の主要なテキスト記事を読み込めません。',
                 readMore: '記事の原文を読む ➔', defaultDesc: '詳細なニュース内容は原文リンクからご確認ください。', translated: '自動翻訳済み',
                 searchPlaceholder: '国を検索してください...',
-                catGeneral: '🌐 総合', catSports: '⚽ スポーツ', catEntertainment: '🍿 文化', catTechnology: '🚀 科学/IT', hotspotLabel: '🔥 今日のホットイシュー'
+                catGeneral: '🌐 総合', catSports: '⚽ スポーツ', catEntertainment: '🍿 文化', catTechnology: '🚀 科学/IT', hotspotLabel: '🔥 今日のホットイシュー', fallbackNotice: '💡 現地のメディアデータが見つからないため、世界の主要メディアが報じた関連ニュースを表示します。'
             },
             'zh-CN': {
                 langLabel: '🌐 语言:', loading: '🌍 正在分析和翻译本地频道...', error: '获取数据时发生错误。',
@@ -277,7 +278,7 @@
                 currentText: '📰 当前文章来源：', noText: '目前无法加载该地区的主要文本新闻。',
                 readMore: '阅读原文 ➔', defaultDesc: '请通过原文链接查看详细新闻内容。', translated: '自动翻译',
                 searchPlaceholder: '搜索国家...',
-                catGeneral: '🌐 综合', catSports: '⚽ 体育', catEntertainment: '🍿 文化', catTechnology: '🚀 科技/IT', hotspotLabel: '🔥 今日热点'
+                catGeneral: '🌐 综合', catSports: '⚽ 体育', catEntertainment: '🍿 文化', catTechnology: '🚀 科技/IT', hotspotLabel: '🔥 今日热点', fallbackNotice: '💡 未找到本地媒体数据，因此显示全球主要媒体报道的相关新闻。'
             },
             'es': {
                 langLabel: '🌐 Idioma:', loading: '🌍 Analizando y traduciendo canales locales...', error: 'Ocurrió un error al obtener los datos.',
@@ -659,18 +660,21 @@
                 
                 const cacheKey = `${locationInfo.code}_${currentCategory}_${currentTargetLang}`;
                 if (newsCache[cacheKey]) {
-                    updateModal(locationInfo, newsCache[cacheKey].videoData, newsCache[cacheKey].textNews);
+                    updateModal(locationInfo, newsCache[cacheKey].videoData, newsCache[cacheKey].textNews, newsCache[cacheKey].isFallback);
                     return;
                 }
 
                 let searchKeyword = PUBLIC_BROADCASTERS[locationInfo.code] || "Official News";
                 const translatedCountry = await translateText(locationInfo.name, localLangCode);
                 
-                let [videoData, textNews] = await Promise.all([
+                let [videoData, textNewsData] = await Promise.all([
                     getNewsVideoData(locationInfo.code, searchKeyword, translatedCountry),
                     getTextNews(locationInfo.code, translatedCountry)
                 ]);
                 
+                let textNews = textNewsData ? textNewsData.data : null;
+                let isFallbackText = textNewsData ? textNewsData.isFallback : false;
+
                 if (textNews) {
                     textNews.originalTitle = textNews.title;
                     textNews.originalDescription = textNews.description;
@@ -690,8 +694,10 @@
                     if (descToTranslate) textNews.description = translatedResults[1]; 
                 }
                 
-                newsCache[cacheKey] = { videoData: videoData, textNews: textNews };
-                updateModal(locationInfo, videoData, textNews);
+                let isFallbackTotal = (videoData && videoData.type === 'globalFallback') || isFallbackText;
+                
+                newsCache[cacheKey] = { videoData: videoData, textNews: textNews, isFallback: isFallbackTotal };
+                updateModal(locationInfo, videoData, textNews, isFallbackTotal);
             } catch (error) {
                 const ui = UI_DICT[currentTargetLang];
                 showErrorBox(ui.error + " (" + String(error) + ")");
@@ -751,12 +757,6 @@
                 let regionParam = `&regionCode=${countryCode}`;
                 let langParam = `&relevanceLanguage=${localLang}`;
 
-                // 북한 예외 처리: 지역 제한을 풀고 글로벌에서 검색
-                if (countryCode === 'KP') {
-                    regionParam = ''; 
-                    strictQuery = `North Korea News ${countryName}`;
-                }
-
                 if (OFFICIAL_CHANNELS[countryCode] && currentCategory === 'general') {
                     const channelId = OFFICIAL_CHANNELS[countryCode];
                     let embedUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&order=date&channelId=${channelId}&maxResults=1&key=${YOUTUBE_API_KEY}`;
@@ -782,6 +782,20 @@
                     result.channelName = data.items[0].snippet.channelTitle; 
                     return result;
                 }
+
+                // 💡 2차 폴백: 국가 코드로 영상이 검색되지 않는 폐쇄 국가(북한 등)인 경우 글로벌 검색으로 전환
+                let globalQuery = `${countryName} News`;
+                queryUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(globalQuery)}&type=video&videoEmbeddable=true&videoCategoryId=${videoCategoryId}&order=relevance&maxResults=1&key=${YOUTUBE_API_KEY}`;
+                response = await fetch(queryUrl);
+                data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    result.type = 'globalFallback'; // 알림 배너를 띄우기 위한 특수 타입
+                    result.videoId = data.items[0].id.videoId;
+                    result.channelName = data.items[0].snippet.channelTitle; 
+                    return result;
+                }
+
                 return result; 
             } catch (error) { return result; }
         }
@@ -795,45 +809,46 @@
             if (currentCategory === 'technology') categoryParam = '&category=technology';
 
             try {
-                // 북한(KP) 등 자국 내 독립 언론이 없어 API에 등록되지 않은 특수 국가 예외 처리
                 let countryParam = `&country=${countryCode.toLowerCase()}`;
-                if (countryCode === 'KP') countryParam = ''; // 글로벌 검색으로 전환
 
                 let url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}${countryParam}&q=${encodeURIComponent(localCountryName)}${categoryParam}`;
                 let response = await fetch(url);
                 
                 if (response.ok) {
                     let data = await response.json();
-                    if (data.results && data.results.length > 0) return data.results[0]; 
+                    if (data.results && data.results.length > 0) return { data: data.results[0], isFallback: false }; 
                 }
                 
-                // 검색어 없이 국가 코드로만 1차 폴백 (KP는 countryParam이 비어있으므로 q파라미터를 기본 국가명으로 대체)
-                if (countryCode === 'KP') {
-                    url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=North%20Korea`;
-                } else {
-                    url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}${countryParam}`;
-                }
-                
+                // 검색어 없이 국가 코드로만 1차 폴백
+                url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}${countryParam}`;
                 response = await fetch(url); 
                 if (response.ok) {
                     let data = await response.json();
-                    if (data.results && data.results.length > 0) return data.results[0]; 
+                    if (data.results && data.results.length > 0) return { data: data.results[0], isFallback: false }; 
                 }
 
-                // 💡 3. 기능 개선: NewsData.io 결과가 없을 때 사용할 대체(Fallback) API 로직 추가 (GNews API 활용)
-                const GNEWS_API_KEY = '5f2e0e9803bfdbb091fcf3b85bb12b67'; // 무료 GNews API 임시 키
+                // 2차 폴백: 국가 코드로 결과가 없으면(현지 언론 부재), 글로벌 전체에서 키워드(국가명)로 검색
+                url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=${encodeURIComponent(localCountryName)}+News`;
+                response = await fetch(url);
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data.results && data.results.length > 0) return { data: data.results[0], isFallback: true };
+                }
+
+                // 3차 폴백: GNews API 활용
+                const GNEWS_API_KEY = '5f2e0e9803bfdbb091fcf3b85bb12b67';
                 let gnewsUrl = `https://gnews.io/api/v4/top-headlines?country=${countryCode.toLowerCase()}&apikey=${GNEWS_API_KEY}`;
                 response = await fetch(gnewsUrl);
                 if (response.ok) {
                     let data = await response.json();
                     if (data.articles && data.articles.length > 0) {
                         const article = data.articles[0];
-                        return {
+                        return { data: {
                             title: article.title,
                             description: article.description,
                             link: article.url,
                             source_id: article.source.name
-                        };
+                        }, isFallback: false };
                     }
                 }
 
@@ -883,7 +898,7 @@
             });
         }
 
-        function updateModal(locationInfo, videoData, textNews) {
+        function updateModal(locationInfo, videoData, textNews, isFallback = false) {
             const ui = UI_DICT[currentTargetLang];
             
             if (window.openCountryCommunity) {
@@ -896,6 +911,14 @@
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('modal-content-area').style.display = 'block';
             document.getElementById('news-title').innerHTML = `${locationInfo.name} <span class="translation-badge">${ui.translated}</span>`;
+            
+            const fallbackNotice = document.getElementById('news-fallback-notice');
+            if (isFallback) {
+                fallbackNotice.innerText = ui.fallbackNotice || '💡 현지 언론 데이터를 찾을 수 없어, 전 세계 주요 언론이 보도한 관련 뉴스로 대체합니다.';
+                fallbackNotice.style.display = 'block';
+            } else {
+                fallbackNotice.style.display = 'none';
+            }
             
             const videoIndicator = document.getElementById('video-source-indicator');
             const videoIframe = document.getElementById('news-video');
