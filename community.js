@@ -57,7 +57,7 @@ export function openCountryCommunity(countryCode, countryName) {
 
     // 3. Subscribe to Real-time Comments
     const commentsRef = collection(db, `countries/${countryCode}/comments`);
-    const q = query(commentsRef, orderBy("createdAt", "desc"), limit(50));
+    const q = query(commentsRef, orderBy("createdAt", "desc"), limit(100));
     
     unsubscribeCountryComments = onSnapshot(q, (snapshot) => {
         const listEl = document.getElementById('country-comment-list');
@@ -222,7 +222,7 @@ function setupGlobalLounge() {
         if (!unsubscribeGlobalComments) {
             const commentsRef = collection(db, `global_lounge`);
             // limit to 50 latest
-            const q = query(commentsRef, orderBy("createdAt", "desc"), limit(50));
+            const q = query(commentsRef, orderBy("createdAt", "desc"), limit(100));
             unsubscribeGlobalComments = onSnapshot(q, (snapshot) => {
                 const listEl = document.getElementById('global-chat-list');
                 listEl.innerHTML = '';
