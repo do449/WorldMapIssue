@@ -1,20 +1,20 @@
 [
   {
+    "name": "영국",
+    "lat": 54.7023545,
+    "lng": -3.2765753,
+    "title": "Watford's best new restaurants according to customers' reviews"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "No. 14 Ohio State Opens 2026-27 Season on the Road vs. Ole Miss and UT Martin"
+    "title": "Justin Verlander Makes Emotional Final Pitch for Detroit Tigers"
   },
   {
-    "name": "필리핀",
-    "lat": 12.7503486,
-    "lng": 122.7312101,
-    "title": "DOE unveils energy masterplan"
-  },
-  {
-    "name": "파키스탄",
-    "lat": 30.3308401,
-    "lng": 71.247499,
-    "title": "Sanaullah calls for ending practice of taking protests to Islamabad"
+    "name": "남아프리카 공화국",
+    "lat": -28.8166236,
+    "lng": 24.991639,
+    "title": "Hem redeems himself as he dethrones Busakwe"
   }
 ]
