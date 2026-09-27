@@ -31,6 +31,8 @@
 
         /* 💡 모달 애니메이션 추가 (Fade-in / Scale-up) */
         #news-modal {
+            #ui-controls { background: #202124; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); width: 92%; max-width: 640px; 
             background: #ffffff; padding: 35px; border-radius: 28px; box-shadow: 0 24px 50px rgba(0,0,0,0.25); z-index: 1000; max-height: 85vh; overflow-y: auto; 
             opacity: 0; transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -39,6 +41,24 @@
 
         .close-btn { float: right; cursor: pointer; font-size: 28px; color: #bdc1c6; font-weight: bold; transition: all 0.2s; margin-top: -15px; margin-right: -15px; width: 44px; height: 44px; text-align: center; line-height: 44px; border-radius: 50%; background: #f8f9fa; }
         .close-btn:hover { color: #5f6368; background: #e8eaed; transform: scale(1.05); }
+            #global-lounge-panel { background: #202124; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+            .gl-body { background: #202124; }
+            .gl-footer { background: #202124; border-top-color: #3c4043; }
+            .gl-msg { background: #303134; box-shadow: none; }
+            .gl-msg-nick { color: #8ab4f8; }
+            .gl-msg-text { color: #e8eaed; }
+            .community-section { border-top-color: #3c4043; }
+            .comm-title { color: #e8eaed; }
+            .react-btn { background: #303134; color: #e8eaed; }
+            .react-btn:hover { background: #3c4043; }
+            .comm-list { background: #202124; border-color: #3c4043; }
+            .comm-item { border-bottom-color: #3c4043; }
+            .comm-text { color: #e8eaed; }
+            .comm-input-nick, .comm-input-text { background: #202124; border-color: #5f6368; color: #e8eaed; }
+            .comm-submit-btn { background: #8ab4f8; color: #202124; }
+            .comm-submit-btn:hover { background: #aecbfa; }
+
+
         
         #news-title { margin: 0 0 18px 0; color: #202124; font-size: 1.8em; font-weight: 900; letter-spacing: -0.5px; }
         
@@ -114,6 +134,8 @@
 
         @media (max-width: 768px) {
             #news-modal { width: 90%; padding: 20px; border-radius: 20px; }
+            #ui-controls { background: #202124; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+
             #top-right-container { top: 10px; left: 10px; right: 10px; gap: 8px; align-items: stretch; }
             #ui-controls { font-size: 13px; padding: 12px; width: auto; max-width: none; }
             #category-filters { justify-content: flex-start; max-width: none; }
@@ -161,6 +183,50 @@
             #global-lounge-btn { bottom: 20px; right: 20px; padding: 12px 20px; font-size: 14px; }
             #global-lounge-panel { width: 90%; right: 5%; height: 60vh; }
         }
+        /* 💡 Dark Mode Support */
+        @media (prefers-color-scheme: dark) {
+            #news-modal { background: #202124; color: #e8eaed; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+            #ui-controls { background: #202124; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
+
+            #news-title { color: #e8eaed; border-bottom: 2px solid #3c4043; }
+            .article-box { background: #2b2d31; border-color: #3c4043; }
+            .article-title { color: #e8eaed; }
+            .article-desc { color: #9aa0a6; }
+            .resource-btn { background: #303134; color: #e8eaed; border-color: #5f6368; }
+            .resource-btn:hover { background: #3c4043; border-color: #8ab4f8; color: #8ab4f8; }
+            .resource-section { border-bottom-color: #3c4043; }
+            .resource-title { color: #9aa0a6; }
+            #trivia-bar { background: #303134; border-color: #3c4043; color: #e8eaed; }
+            .cat-chip { background: #303134; border-color: #5f6368; color: #9aa0a6; }
+            .cat-chip:hover { border-color: #8ab4f8; color: #8ab4f8; }
+            .cat-chip.active { background: #8ab4f8; color: #202124; border-color: #8ab4f8; }
+            #ui-controls .mapboxgl-ctrl-geocoder { background-color: #303134 !important; border-color: #5f6368 !important; }
+            #ui-controls .mapboxgl-ctrl-geocoder--input { color: #e8eaed !important; }
+            #ui-controls select { background-color: #303134; color: #e8eaed; border-color: #5f6368; }
+            #ui-controls span { color: #e8eaed; }
+            .translation-badge { background: #3c4043; color: #9aa0a6; border-color: #5f6368; }
+            .close-btn { background: #303134; color: #9aa0a6; }
+            .close-btn:hover { background: #3c4043; color: #e8eaed; }
+            #global-lounge-panel { background: #202124; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+            .gl-body { background: #202124; }
+            .gl-footer { background: #202124; border-top-color: #3c4043; }
+            .gl-msg { background: #303134; box-shadow: none; }
+            .gl-msg-nick { color: #8ab4f8; }
+            .gl-msg-text { color: #e8eaed; }
+            .community-section { border-top-color: #3c4043; }
+            .comm-title { color: #e8eaed; }
+            .react-btn { background: #303134; color: #e8eaed; }
+            .react-btn:hover { background: #3c4043; }
+            .comm-list { background: #202124; border-color: #3c4043; }
+            .comm-item { border-bottom-color: #3c4043; }
+            .comm-text { color: #e8eaed; }
+            .comm-input-nick, .comm-input-text { background: #202124; border-color: #5f6368; color: #e8eaed; }
+            .comm-submit-btn { background: #8ab4f8; color: #202124; }
+            .comm-submit-btn:hover { background: #aecbfa; }
+
+
+        }
+
     </style>
 </head>
 <body>
@@ -205,7 +271,7 @@
     <div id="news-modal">
         <span class="close-btn" onclick="closeModal()">✖</span>
         <h3 id="news-title">지역 뉴스</h3>
-        <div id="news-fallback-notice" style="display: none; background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 13px;"></div>
+        <div id="news-fallback-notice" style="display: none; background: #ea4335; color: #ffffff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; font-size: 13px;"></div>
         
         <p id="loading-msg">🌍 현지 방송국 및 언론사의 최신 뉴스를 분석하고 번역 중입니다. 잠시만 기다려주세요...</p>
         <p id="error-msg"></p>
@@ -246,7 +312,7 @@
         const UI_DICT = {
             'ko': {
                 langLabel: '🌐 언어:', loading: '🌍 현지 방송국 및 언론사의 최신 뉴스를 분석하고 번역 중입니다. 잠시만 기다려주세요...', error: '데이터를 불러오는 중 오류가 발생했습니다. 다시 시도해 주세요.',
-                videoTitle: '📺 해당 국가 주요 공영/공식 방송국 유튜브 채널', textTitle: '📰 해당 국가 주요 공영/공식 언론사 홈페이지',
+                videoTitle: '📺 해당 국가 주요 공영/공식 방송국 유튜브 채널', textTitle: '📰 해당 국가 주요 공영/공식 언론사 홈페이지', fallbackVideoTitle: '📺 글로벌 대체 언론사 유튜브 채널', fallbackTextTitle: '📰 글로벌 대체 매체 홈페이지',
                 currentVideo: '📺 지금 보고 있는 뉴스: ', blockedVideo: '⚠️ 차단된 영상 대신 가져왔어요! ➔ 현재 시청 중: ', noVideo: '⚠️ 지금은 이 나라의 영상 뉴스를 찾지 못했어요.',
                 currentText: '📰 지금 읽고 있는 기사: ', noText: '지금은 이 나라의 글 뉴스를 찾지 못했어요.',
                 readMore: '기사 원문 읽기 ➔', defaultDesc: '기사 원문 링크를 눌러서 자세한 내용을 확인해 보세요!', translated: '자동 번역됨',
@@ -255,7 +321,7 @@
             },
             'en': {
                 langLabel: '🌐 Language:', loading: '🌍 Analyzing and translating local channels...', error: 'An error occurred while fetching data.',
-                videoTitle: '📺 Major Public/Official Broadcasting YouTube Channels', textTitle: '📰 Major Public/Official Media Homepages',
+                videoTitle: '📺 Major Public/Official Broadcasting YouTube Channels', textTitle: '📰 Major Public/Official Media Homepages', fallbackVideoTitle: '📺 Global Alternative Media YouTube Channels', fallbackTextTitle: '📰 Global Alternative Media Homepages',
                 currentVideo: '📺 Currently watching: ', blockedVideo: '⚠️ Alternative provided due to policy block ➔ Watching: ', noVideo: '⚠️ Cannot load video for this region currently.',
                 currentText: '📰 Current article source: ', noText: 'Cannot load main text articles for this region currently.',
                 readMore: 'Read original article ➔', defaultDesc: 'Please check the original link for detailed news content.', translated: 'Auto-translated',
@@ -264,7 +330,7 @@
             },
             'ja': {
                 langLabel: '🌐 言語:', loading: '🌍 現地のチャンネルを分析・翻訳しています...', error: 'データの取得中にエラーが発生しました。',
-                videoTitle: '📺 該当国の主要な公共/公式放送局のYouTubeチャンネル', textTitle: '📰 該当国の主要な公共/公式メディアのホームページ',
+                videoTitle: '📺 該当国の主要な公共/公式放送局のYouTubeチャンネル', textTitle: '📰 該当国の主要な公共/公式メディアのホームページ', fallbackVideoTitle: '📺 グローバル代替メディアのYouTubeチャンネル', fallbackTextTitle: '📰 グローバル代替メディアのホームページ',
                 currentVideo: '📺 現在視聴中: ', blockedVideo: '⚠️ ポリシー制限による代替提供 ➔ 視聴中: ', noVideo: '⚠️ 現在、この地域の動画を読み込めません。',
                 currentText: '📰 現在の記事のソース: ', noText: '現在、この地域の主要なテキスト記事を読み込めません。',
                 readMore: '記事の原文を読む ➔', defaultDesc: '詳細なニュース内容は原文リンクからご確認ください。', translated: '自動翻訳済み',
@@ -273,7 +339,7 @@
             },
             'zh-CN': {
                 langLabel: '🌐 语言:', loading: '🌍 正在分析和翻译本地频道...', error: '获取数据时发生错误。',
-                videoTitle: '📺 该国主要公共/官方广播YouTube频道', textTitle: '📰 该国主要公共/官方媒体主页',
+                videoTitle: '📺 该国主要公共/官方广播YouTube频道', textTitle: '📰 该国主要公共/官方媒体主页', fallbackVideoTitle: '📺 全球替代媒体YouTube频道', fallbackTextTitle: '📰 全球替代媒体主页',
                 currentVideo: '📺 当前观看：', blockedVideo: '⚠️ 因政策屏蔽提供替代 ➔ 当前观看：', noVideo: '⚠️ 目前无法加载该地区的视频。',
                 currentText: '📰 当前文章来源：', noText: '目前无法加载该地区的主要文本新闻。',
                 readMore: '阅读原文 ➔', defaultDesc: '请通过原文链接查看详细新闻内容。', translated: '自动翻译',
@@ -282,7 +348,7 @@
             },
             'es': {
                 langLabel: '🌐 Idioma:', loading: '🌍 Analizando y traduciendo canales locales...', error: 'Ocurrió un error al obtener los datos.',
-                videoTitle: '📺 Canales de YouTube de radiodifusión pública/oficial principal', textTitle: '📰 Páginas web de los principales medios públicos/oficiales',
+                videoTitle: '📺 Canales de YouTube de radiodifusión pública/oficial principal', textTitle: '📰 Páginas web de los principales medios públicos/oficiales', fallbackVideoTitle: '📺 Canales de YouTube de Medios Alternativos Globales', fallbackTextTitle: '📰 Páginas Web de Medios Alternativos Globales',
                 currentVideo: '📺 Viendo actualmente: ', blockedVideo: '⚠️ Alternativa por bloqueo de política ➔ Viendo: ', noVideo: '⚠️ No se puede cargar el video de esta región.',
                 currentText: '📰 Fuente del artículo actual: ', noText: 'No se pueden cargar los artículos de texto para esta región.',
                 readMore: 'Leer artículo original ➔', defaultDesc: 'Consulte el enlace original para obtener noticias detalladas.', translated: 'Traducido automáticamente',
@@ -933,8 +999,8 @@
                 window.openCountryCommunity(locationInfo.code, locationInfo.name);
             }
             
-            document.getElementById('video-resource-title').innerText = ui.videoTitle;
-            document.getElementById('text-resource-title').innerText = ui.textTitle;
+            document.getElementById('video-resource-title').innerText = isFallback ? (ui.fallbackVideoTitle || '📺 글로벌 대체 언론사 유튜브 채널') : ui.videoTitle;
+            document.getElementById('text-resource-title').innerText = isFallback ? (ui.fallbackTextTitle || '📰 글로벌 대체 언론사 홈페이지') : ui.textTitle;
 
             document.getElementById('loading-msg').style.display = 'none';
             document.getElementById('modal-content-area').style.display = 'block';
