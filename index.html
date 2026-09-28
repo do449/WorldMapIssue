@@ -21,7 +21,7 @@
             background: rgba(255, 255, 255, 0.95); padding: 12px 20px; backdrop-filter: blur(10px); pointer-events: auto;
             border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: #444; font-weight: 700; font-size: 15px; width: 280px; max-width: calc(100vw - 40px);
         }
-        #ui-controls select { padding: 8px 12px; border-radius: 12px; font-weight: 700; border: 2px solid #e8eaed; background: #fff; cursor: pointer; outline: none; transition: all 0.3s; font-size: 14px; flex-grow: 1; margin-left: 10px; }
+
         #ui-controls select:focus { border-color: #4285f4; box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2); }
 
         #hover-tooltip {
@@ -31,7 +31,6 @@
 
         /* 💡 모달 애니메이션 추가 (Fade-in / Scale-up) */
         #news-modal {
-            #ui-controls { background: #202124; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
 
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); width: 92%; max-width: 640px; 
             background: #ffffff; padding: 35px; border-radius: 28px; box-shadow: 0 24px 50px rgba(0,0,0,0.25); z-index: 1000; max-height: 85vh; overflow-y: auto; 
@@ -134,7 +133,6 @@
 
         @media (max-width: 768px) {
             #news-modal { width: 90%; padding: 20px; border-radius: 20px; }
-            #ui-controls { background: #202124; box-shadow: 0 4px 15px rgba(0,0,0,0.6); }
 
             #top-right-container { top: 10px; left: 10px; right: 10px; gap: 8px; align-items: stretch; }
             #ui-controls { font-size: 13px; padding: 12px; width: auto; max-width: none; }
@@ -202,6 +200,26 @@
             .cat-chip.active { background: #8ab4f8; color: #202124; border-color: #8ab4f8; }
             #ui-controls .mapboxgl-ctrl-geocoder { background-color: #303134 !important; border-color: #5f6368 !important; }
             #ui-controls .mapboxgl-ctrl-geocoder--input { color: #e8eaed !important; }
+        #unified-search-container { display: flex; align-items: center; background: #f8f9fa; border: 2px solid #e8eaed; border-radius: 16px; padding: 4px 8px; }
+        #unified-search-input { flex: 1; border: none; background: transparent; padding: 8px; font-size: 14px; font-weight: 700; color: #444; outline: none; }
+        #unified-search-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #5f6368; }
+        #unified-search-dropdown { position: absolute; top: 110%; left: 0; width: 100%; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 100; max-height: 350px; overflow-y: auto; border: 1px solid #e8eaed; }
+        .unified-result-group { padding: 10px 15px; font-size: 12px; font-weight: 800; color: #80868b; border-bottom: 1px solid #f1f3f4; background: #f8f9fa; }
+        .unified-result-item { padding: 12px 15px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid #f1f3f4; transition: background 0.2s; }
+        .unified-result-item:hover { background: #f8f9fa; }
+        .unified-result-item.dark:hover { background: #3c4043; }
+        .ur-title { font-size: 14px; font-weight: 800; color: #202124; }
+        .ur-desc { font-size: 12px; color: #5f6368; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+            #unified-search-container { background: #303134; border-color: #5f6368; }
+            #unified-search-input { color: #e8eaed; }
+            #unified-search-dropdown { background: #2b2d31; border-color: #3c4043; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+            .unified-result-group { background: #202124; border-bottom-color: #3c4043; color: #9aa0a6; }
+            .unified-result-item { border-bottom-color: #3c4043; }
+            .unified-result-item:hover { background: #3c4043; }
+            .ur-title { color: #e8eaed; }
+            .ur-desc { color: #9aa0a6; }
+
             #ui-controls select { background-color: #303134; color: #e8eaed; border-color: #5f6368; }
             #ui-controls span { color: #e8eaed; }
             .translation-badge { background: #3c4043; color: #9aa0a6; border-color: #5f6368; }
@@ -233,6 +251,15 @@
 
     <div id="top-right-container">
         <div id="ui-controls">
+            <!-- 💡 통합 검색창 (나라, 뉴스, 사건) -->
+            <div id="unified-search-container" style="position: relative;">
+                <input type="text" id="unified-search-input" placeholder="나라, 뉴스, 사건 검색..." autocomplete="off" />
+                <button id="unified-search-btn">🔍</button>
+                <div id="unified-search-dropdown" style="display: none;">
+                    <div id="unified-search-results"></div>
+                </div>
+            </div>
+
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <span id="ui-lang-label">🌐 언어:</span> 
                 <select id="lang-selector">
@@ -436,78 +463,117 @@
 
         let seenCountries = new Set();
 
-        // 💡 국가 검색 플러그인 추가 (Geocoding)
-        const geocoder = new MapboxGeocoder({
-            accessToken: mapboxgl.accessToken,
-            mapboxgl: mapboxgl,
-            types: 'country,place',
-            placeholder: UI_DICT[currentTargetLang].searchPlaceholder,
-            filter: function(item) {
-                let countryCode = null;
-                if (item.place_type.includes('country')) {
-                    countryCode = item.properties.short_code || item.text;
-                } else if (item.context) {
-                    const countryCtx = item.context.find(c => c.id.startsWith('country'));
-                    if (countryCtx) countryCode = countryCtx.short_code || countryCtx.text;
-                }
-                
-                if (!countryCode) return false;
-                if (seenCountries.has(countryCode)) return false;
-                
-                seenCountries.add(countryCode);
-                return true;
-            },
-            render: function(item) {
-                let countryName = item.text;
-                if (!item.place_type.includes('country') && item.context) {
-                    const countryCtx = item.context.find(c => c.id.startsWith('country'));
-                    if (countryCtx) countryName = countryCtx.text;
-                }
-                return `<div class="mapboxgl-ctrl-geocoder--suggestion"><div class="mapboxgl-ctrl-geocoder--suggestion-title" style="font-weight: 700; color: #444;">${countryName}</div></div>`;
+        // 💡 통합 검색 로직 (나라 + 뉴스/사건)
+        const unifiedSearchInput = document.getElementById('unified-search-input');
+        const unifiedSearchBtn = document.getElementById('unified-search-btn');
+        const unifiedSearchDropdown = document.getElementById('unified-search-dropdown');
+        const unifiedSearchResults = document.getElementById('unified-search-results');
+
+        async function performUnifiedSearch() {
+            const query = unifiedSearchInput.value.trim();
+            if (!query) {
+                unifiedSearchDropdown.style.display = 'none';
+                return;
             }
-        });
-        document.getElementById('ui-controls').appendChild(geocoder.onAdd(map));
 
-        geocoder.on('loading', () => {
-            seenCountries.clear();
-        });
+            unifiedSearchDropdown.style.display = 'block';
+            unifiedSearchResults.innerHTML = '<div style="padding: 15px; text-align: center; color: #80868b; font-weight: 700; font-size: 13px;">🔍 검색 중...</div>';
 
-        let latestGeocoderResults = [];
-        geocoder.on('results', function(e) {
-            latestGeocoderResults = e.features;
-        });
+            try {
+                // 1. Mapbox Geocoding (지역/나라 검색)
+                const geoUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?types=country,region,place&access_token=${MAPBOX_ACCESS_TOKEN}&language=${currentTargetLang}`;
+                let geoPromise = fetch(geoUrl).then(res => res.json()).catch(() => ({features: []}));
+                
+                // 2. NewsData.io (글로벌 뉴스 검색)
+                const newsUrl = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=${encodeURIComponent(query)}`;
+                let newsPromise = fetch(newsUrl).then(res => res.json()).catch(() => ({results: []}));
+                
+                const [geoData, newsData] = await Promise.all([geoPromise, newsPromise]);
 
-        geocoder.on('result', function(e) {
-            const lng = e.result.center[0];
-            const lat = e.result.center[1];
+                let html = '';
+                
+                if (geoData.features && geoData.features.length > 0) {
+                    html += '<div class="unified-result-group">🌍 지역/나라</div>';
+                    geoData.features.slice(0, 3).forEach(f => {
+                        html += `<div class="unified-result-item" onclick="selectUnifiedResult('geo', ${f.center[0]}, ${f.center[1]}, '${f.text.replace(/'/g, "\\'")}')">
+                            <div class="ur-title">${f.text}</div>
+                            <div class="ur-desc">${f.place_name}</div>
+                        </div>`;
+                    });
+                }
+
+                if (newsData.results && newsData.results.length > 0) {
+                    html += '<div class="unified-result-group">📰 관련 뉴스</div>';
+                    newsData.results.slice(0, 5).forEach(article => {
+                        const c = (article.country && article.country.length > 0) ? article.country[0] : '';
+                        html += `<div class="unified-result-item" onclick="selectUnifiedResult('news', null, null, '${c}', '${article.title.replace(/'/g, "\\'")}')">
+                            <div class="ur-title">${article.title}</div>
+                            <div class="ur-desc">${article.source_id} ${c ? '['+c.toUpperCase()+']' : ''}</div>
+                        </div>`;
+                    });
+                }
+                
+                if (html === '') {
+                    html = '<div style="padding: 15px; text-align: center; color: #80868b; font-weight: 700; font-size: 13px;">결과가 없습니다.</div>';
+                }
+                
+                unifiedSearchResults.innerHTML = html;
+            } catch (err) {
+                unifiedSearchResults.innerHTML = '<div style="padding: 15px; text-align: center; color: #ea4335; font-weight: 700; font-size: 13px;">검색 중 오류가 발생했습니다.</div>';
+            }
+        }
+
+        window.selectUnifiedResult = async function(type, lng, lat, countryCodeOrName, newsTitle = '') {
+            unifiedSearchDropdown.style.display = 'none';
+            unifiedSearchInput.value = '';
             
-            // 데스크탑/모바일 상관없이 검색 결과 선택 시 바로 뉴스 표시
-            fetchAndShowNews(lat, lng);
+            // 사용자의 요청: "그 나라의 뉴스로 이동 할 거냐고 묻는 창이 나오고" -> Alert/Confirm 활용
+            let destinationName = countryCodeOrName || "해당 지역";
+            if (type === 'geo') {
+                if (!confirm(`[${destinationName}] 지역의 뉴스로 이동하시겠습니까?`)) return;
+                map.flyTo({ center: [lng, lat], zoom: 4 });
+                setTimeout(() => fetchAndShowNews(lat, lng), 800);
+            } else if (type === 'news') {
+                if (!countryCodeOrName) {
+                    alert('국가 정보가 없어 지도로 이동할 수 없습니다.');
+                    return;
+                }
+                if (!confirm(`해당 뉴스의 발생 국가([${destinationName}])로 이동하시겠습니까?\n\n뉴스: ${newsTitle}`)) return;
+                
+                unifiedSearchInput.value = '이동 중...';
+                try {
+                    const geoUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(countryCodeOrName)}.json?types=country&access_token=${MAPBOX_ACCESS_TOKEN}`;
+                    const geoRes = await fetch(geoUrl);
+                    const geoData = await geoRes.json();
+                    
+                    if (geoData.features && geoData.features.length > 0) {
+                        const f = geoData.features[0];
+                        unifiedSearchInput.value = '';
+                        map.flyTo({ center: [f.center[0], f.center[1]], zoom: 4 });
+                        setTimeout(() => fetchAndShowNews(f.center[1], f.center[0]), 800);
+                    } else {
+                        unifiedSearchInput.value = '';
+                        alert('해당 뉴스의 국가를 지도에서 찾을 수 없습니다.');
+                    }
+                } catch(e) {
+                    unifiedSearchInput.value = '';
+                }
+            }
+        };
+
+        unifiedSearchBtn.addEventListener('click', performUnifiedSearch);
+        unifiedSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') performUnifiedSearch();
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('unified-search-container').contains(e.target)) {
+                unifiedSearchDropdown.style.display = 'none';
+            }
         });
 
         map.on('style.load', () => { map.setFog({ 'color': 'rgb(186, 210, 235)', 'high-color': 'rgb(36, 92, 223)' }); });
         map.on('load', () => {
-            // Geocoder 인풋에서 Enter 키 입력 시 첫 번째 결과 자동 선택
-            const searchInput = document.querySelector('.mapboxgl-ctrl-geocoder--input');
-            if (searchInput) {
-                searchInput.addEventListener('input', () => {
-                    seenCountries.clear();
-                });
-                searchInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        setTimeout(() => {
-                            const modal = document.getElementById('news-modal');
-                            if (modal.style.display === 'block' || modal.classList.contains('show')) return; // 이미 실행됨
-                            if (latestGeocoderResults && latestGeocoderResults.length > 0) {
-                                const first = latestGeocoderResults[0];
-                                const lng = first.center[0];
-                                const lat = first.center[1];
-                                fetchAndShowNews(lat, lng);
-                            }
-                        }, 200);
-                    }
-                });
-            }
             
             map.addSource('countries-source', { 'type': 'geojson', 'data': 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json' });
             map.addLayer({ 'id': 'country-fills', 'type': 'fill', 'source': 'countries-source', 'paint': { 'fill-color': 'transparent' } });
