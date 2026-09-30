@@ -1,20 +1,20 @@
 [
   {
-    "name": "인도",
-    "lat": 22.3511148,
-    "lng": 78.6677428,
-    "title": "Global Market: Chinese stocks struggle near one-year lows as policy support disappoints"
-  },
-  {
-    "name": "가나",
-    "lat": 8.0300284,
-    "lng": -1.0800271,
-    "title": "Housing Minister urges stakeholders to prioritise quality education in Banda District"
+    "name": "미국",
+    "lat": 39.7837304,
+    "lng": -100.445882,
+    "title": "Wisconsin Obamacare enrollment dropped 16% after loss of subsidies"
   },
   {
     "name": "영국",
     "lat": 54.7023545,
     "lng": -3.2765753,
-    "title": "AudienceProject, Netflix expand measurement partnership"
+    "title": "CPS asked to consider manslaughter charges against firms and people over Grenfell fire"
+  },
+  {
+    "name": "우크라이나",
+    "lat": 49.4871968,
+    "lng": 31.2718321,
+    "title": "Russian forces destroy 200 tonnes of rapeseed at agricultural enterprise in Chernihiv region"
   }
 ]
