@@ -1,20 +1,20 @@
 [
   {
+    "name": "캐나다",
+    "lat": 61.0666922,
+    "lng": -107.991707,
+    "title": "Jury rejects self-defence claim in fatal Alberta shooting; seven bullets recovered"
+  },
+  {
+    "name": "영국",
+    "lat": 54.7023545,
+    "lng": -3.2765753,
+    "title": "I can cut cost of housing to stop London brain drain, Cleverly claims - The Independent"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "India wins Asian Games cricket gold with 19-run victory over Pakistan"
-  },
-  {
-    "name": "인도",
-    "lat": 22.3511148,
-    "lng": 78.6677428,
-    "title": "Stray Kids Join BTS In Skipping Grammy, Avoid Submissions For 2027 Awards"
-  },
-  {
-    "name": "우크라이나",
-    "lat": 49.4871968,
-    "lng": 31.2718321,
-    "title": "Russians attack Izium with drones: five injured"
+    "title": "Alabama survey finds majority supports APT’s ties with PBS, state funding"
   }
 ]
