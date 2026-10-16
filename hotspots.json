@@ -1,20 +1,20 @@
 [
   {
+    "name": "오스트레일리아",
+    "lat": -24.7761086,
+    "lng": 134.755,
+    "title": "Southern Cross Gold (ASX:SX2) Antimony Funding: Which Support Is Preferred, and Which Hinges on an Election? - Kalkine Media"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "Cape Coral couple struggles with sinking road threatening their retirement home"
+    "title": "What we know about the Bend, Oregon, elementary school shooting - NBC News"
   },
   {
-    "name": "케냐",
-    "lat": 0.2793165,
-    "lng": 37.5164935,
-    "title": "MPs demand answers from EPRA over latest fuel prices increase"
-  },
-  {
-    "name": "Turkey",
-    "lat": 34.3939184,
-    "lng": -100.894078,
-    "title": "US investigates 'suspicious mailings' sent to election offices across multiple states"
+    "name": "말라위",
+    "lat": -13.2687204,
+    "lng": 33.9301963,
+    "title": "CAF hikes funding"
   }
 ]
