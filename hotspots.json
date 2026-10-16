@@ -1,20 +1,14 @@
 [
   {
+    "name": "미국",
+    "lat": 39.7837304,
+    "lng": -100.445882,
+    "title": "Dems Tap Bill Clinton to Speak in Desperate Bid to Win Florida Race for Governor"
+  },
+  {
     "name": "영국",
     "lat": 54.7023545,
     "lng": -3.2765753,
-    "title": "White set to join Hawks’ 200 club in Old Albanian encounter"
-  },
-  {
-    "name": "인도",
-    "lat": 22.3511148,
-    "lng": 78.6677428,
-    "title": "Sonamarg to be developed as premier adventure and winter sports hub: CM Omar Abdullah"
-  },
-  {
-    "name": "싱가포르",
-    "lat": 1.357107,
-    "lng": 103.8194992,
-    "title": "Actors John Cena and Jessica Biel hit the gas in Matchbox: The Movie"
+    "title": "Fire crews to remain at Fiddler's Ferry overnight after blaze"
   }
 ]
