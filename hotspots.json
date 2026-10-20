@@ -1,20 +1,14 @@
 [
   {
+    "name": "영국",
+    "lat": 54.7023545,
+    "lng": -3.2765753,
+    "title": "Horror in Walford as EastEnders pervert Craig snatches teenage Amy"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "More images from the 2026 Banner Elk Woolly Worm Festival"
-  },
-  {
-    "name": "인도",
-    "lat": 22.3511148,
-    "lng": 78.6677428,
-    "title": "‘Spare India from anarchy’: Over 400 Indian-origin academics, students condemn anti-CEC protests"
-  },
-  {
-    "name": "필리핀",
-    "lat": 12.7503486,
-    "lng": 122.7312101,
-    "title": "‘Undertale’ strikes big in Manila"
+    "title": "State police searching for hit-and-run driver who caused semi to crash near Blackfoot, shutting down I-15 for hours"
   }
 ]
