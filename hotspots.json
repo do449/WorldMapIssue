@@ -1,20 +1,20 @@
 [
   {
+    "name": "미국",
+    "lat": 39.7837304,
+    "lng": -100.445882,
+    "title": "Large Hearts Dispense a Large Helping of Kindness"
+  },
+  {
     "name": "영국",
     "lat": 54.7023545,
     "lng": -3.2765753,
-    "title": "Avali, Corfu: Not your typical Greek island escape"
+    "title": "Govt's Crackdown On 76 Pharma Companies & What It Symbolises - BW Healthcare World"
   },
   {
-    "name": "싱가포르",
-    "lat": 1.357107,
-    "lng": 103.8194992,
-    "title": "Stop-motion film Wildwood is Nike founder son’s latest unprofitable masterpiece"
-  },
-  {
-    "name": "우크라이나",
-    "lat": 49.4871968,
-    "lng": 31.2718321,
-    "title": "Kyiv plans to add more than 1.5 GW of thermal generation capacity"
+    "name": "캐나다",
+    "lat": 61.0666922,
+    "lng": -107.991707,
+    "title": "First Nations, minister and premiers gather for day of ceremony"
   }
 ]
