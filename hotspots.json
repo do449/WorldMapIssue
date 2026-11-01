@@ -1,14 +1,20 @@
 [
   {
+    "name": "인도",
+    "lat": 22.3511148,
+    "lng": 78.6677428,
+    "title": "Seva First Innovation Challenge 2026: Registration deadline extended to November 6; eligibility, themes"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "Video shows immigration agents detaining man in North Hollywood"
+    "title": "Man charged for robbing man at knifepoint in Winston-Salem"
   },
   {
-    "name": "나이지리아",
-    "lat": 9.6000359,
-    "lng": 7.9999721,
-    "title": "At 91, Adebutu Deepens His Legacy of Philanthropy"
+    "name": "가나",
+    "lat": 8.0300284,
+    "lng": -1.0800271,
+    "title": "CAF confirms Samson Adamu as General Secretary after extensive recruitment process"
   }
 ]
