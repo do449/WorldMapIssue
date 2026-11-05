@@ -1,20 +1,20 @@
 [
   {
+    "lng": 127.7669,
+    "lat": 35.9078,
+    "name": "대한민국",
+    "title": "한국 주요 뉴스"
+  },
+  {
+    "lng": -95.7129,
+    "lat": 37.0902,
     "name": "미국",
-    "lat": 39.7837304,
-    "lng": -100.445882,
-    "title": "Want to become a creative genius? Try this nap hack."
+    "title": "미국 주요 뉴스"
   },
   {
-    "name": "영국",
-    "lat": 54.7023545,
-    "lng": -3.2765753,
-    "title": "British acting icon, 63, was in running to play James Bond but blew his chance"
-  },
-  {
-    "name": "파키스탄",
-    "lat": 30.3308401,
-    "lng": 71.247499,
-    "title": "Sarah Ferguson's spokesperson shares her only plan with health revelation"
+    "lng": 2.2137,
+    "lat": 46.2276,
+    "name": "프랑스",
+    "title": "프랑스 주요 뉴스"
   }
 ]
