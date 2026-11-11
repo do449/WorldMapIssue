@@ -1,20 +1,20 @@
 [
   {
+    "name": "캐나다",
+    "lat": 61.0666922,
+    "lng": -107.991707,
+    "title": "Hope Search and Rescue volunteer awarded for service"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "How to get Bochum vs Augsburg tickets: DFB-Pokal prices, fixture information, last-minute sales & more"
+    "title": "4 grizzly bears linked by DNA to deadly attack on mother and daughter in Canada"
   },
   {
-    "name": "인도",
-    "lat": 22.3511148,
-    "lng": 78.6677428,
-    "title": "When Will Rishabh Pant Join India's Test Squad? Date Revealed - Report"
-  },
-  {
-    "name": "영국",
-    "lat": 54.7023545,
-    "lng": -3.2765753,
-    "title": "Households urged to stockpile 6 items for UK Black Sky event plan"
+    "name": "남아프리카 공화국",
+    "lat": -28.8166236,
+    "lng": 24.991639,
+    "title": "TSMC’s 59.7% Sales Growth Challenges Fears of an AI Spending Slowdown"
   }
 ]
