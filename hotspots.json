@@ -1,20 +1,20 @@
 [
   {
+    "name": "독일",
+    "lat": 51.1638175,
+    "lng": 10.4478313,
+    "title": "Elica celebrates 20 years in Mexico: A story told through art"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "iHeartMedia Investigation Notice: Levi & Korsinsky Notifies Investors of Pending Investigation Into iHeartMedia, Inc. (IHRT)"
+    "title": "Shaping up"
   },
   {
-    "name": "영국",
-    "lat": 54.7023545,
-    "lng": -3.2765753,
-    "title": "Meghan ‘focused on work and family’ after dad Thomas Markle ‘detained’"
-  },
-  {
-    "name": "말레이시아",
-    "lat": 4.5693754,
-    "lng": 102.2656823,
-    "title": "Penang cruise passenger arrivals jump 52% in first nine months of 2026"
+    "name": "러시아",
+    "lat": 64.6863136,
+    "lng": 97.7453061,
+    "title": "Winter Fragrance Selections Defined by Accord Structure"
   }
 ]
