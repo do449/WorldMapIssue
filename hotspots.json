@@ -1,14 +1,20 @@
 [
   {
+    "name": "아제르바이잔",
+    "lat": 40.3936294,
+    "lng": 47.7872508,
+    "title": "Five Questions About the Future of Global Anticorruption Efforts in the Trump Era"
+  },
+  {
+    "name": "인도",
+    "lat": 22.3511148,
+    "lng": 78.6677428,
+    "title": "Carlsberg India Plans To Launch $600 Million IPO By January"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "African scholars visit Cangxi, Sichuan province for study tour"
-  },
-  {
-    "name": "오스트레일리아",
-    "lat": -24.7761086,
-    "lng": 134.755,
-    "title": "Wetlands in Focus: Exhibition reveals secret life of Leeton haven"
+    "title": "Commissioners want investigation of recent election campaign"
   }
 ]
