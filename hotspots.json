@@ -1,20 +1,20 @@
 [
   {
+    "name": "인도",
+    "lat": 22.3511148,
+    "lng": 78.6677428,
+    "title": "Save $56 on Baseus Inspire XC1 Open Earbuds With This Black Friday Deal"
+  },
+  {
     "name": "미국",
     "lat": 39.7837304,
     "lng": -100.445882,
-    "title": "Ezra Frech Wins Dancing with the Stars Season 35 Mirrorball Trophy"
+    "title": "$699 -- Mediterranean island 4-star trip incl. flights"
   },
   {
-    "name": "우크라이나",
-    "lat": 49.4871968,
-    "lng": 31.2718321,
-    "title": "Russia loses almost 2,091 soldiers and 15 artillery systems over past day"
-  },
-  {
-    "name": "오스트레일리아",
-    "lat": -24.7761086,
-    "lng": 134.755,
-    "title": "‘Violated’: Nurses’ fury over doc’s sick act"
+    "name": "캐나다",
+    "lat": 61.0666922,
+    "lng": -107.991707,
+    "title": "Immigrants in Canada more likely to be overqualified for their jobs: report - Castanet"
   }
 ]
